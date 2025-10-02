@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# normelog entrypoint
+
+# Resolve base dir
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+LIB_DIR="$BASE_DIR/lib"
+
+# shell environment
+. "$LIB_DIR/env.sh"
+. "$LIB_DIR/version.sh"
+. "$LIB_DIR/log.sh"
+. "$LIB_DIR/compat.sh"
+. "$LIB_DIR/config.sh"
+. "$LIB_DIR/flags.sh"
+. "$LIB_DIR/run_norminette.sh"
+. "$LIB_DIR/exclude.sh"
+. "$LIB_DIR/parse.sh"
+. "$LIB_DIR/filter.sh"
+. "$LIB_DIR/stats.sh"
+. "$LIB_DIR/format_text.sh"
+. "$LIB_DIR/format_json.sh"
+. "$LIB_DIR/update_check.sh"
+. "$LIB_DIR/update_apply.sh"
+
+main() {
+  nl_env_init
+  nl_version_init
+  nl_config_load "$@"
+  nl_flags_parse "$@"
+
+  if [[ "$NL_SHOW_VERSION" == 1 ]]; then
+    echo "normelog ${NL_VERSION}"; exit 0
+  fi
+  if [[ "$NL_SHOW_HELP" == 1 ]]; then
+    nl_flags_help; exit 0
+  fi
+
+  nl_log_debug "Running norminette..."
+  local output
+  output=$(nl_run_norminette)
+
+  nl_log_debug "Applying exclusions..."
+  output=$(nl_exclude_filter <<<"$output")
+
+  nl_log_debug "Parsing output..."
+  local records
+  records=$(nl_parse_output <<<"$output")
+
+  nl_log_debug "Filtering by error types..."
+  local filtered
+  filtered=$(nl_filter_errors <<<"$records")
+
+  nl_log_debug "Computing stats..."
+  local stats
+  stats=$(nl_compute_stats <<<"$filtered")
+
+  if [[ "$NL_OUTPUT" == "json" ]]; then
+    nl_format_json "$filtered" "$stats"
+  else
+    nl_format_text "$filtered" "$stats"
+  fi
+}
+
+main "$@"
+

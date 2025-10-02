@@ -1,0 +1,5 @@
+external-sources=true
+shell=bash
+source-path=SCRIPTDIR/normelog/lib
+severity=style
+
