@@ -1,15 +1,14 @@
 # normelog
 
-Portable helper around `norminette` to summarize and filter errors, designed for simple download from GitHub Releases (no .deb packaging required).
+Portable helper around `norminette` to summarize and filter errors. Modular layout under `normelog/` suitable for GitHub Releases.
 
 ## Install
 
-- Download the latest `normelog` from Releases
-- Make it executable and place it in your `PATH`:
+- Download the release asset and place a symlink to the entrypoint:
 
 ```
-chmod +x normelog
-sudo mv normelog /usr/local/bin/
+chmod +x normelog/bin/normelog
+sudo ln -sf "$PWD/normelog/bin/normelog" /usr/local/bin/normelog
 ```
 
 ## Usage
@@ -26,4 +25,3 @@ Examples:
 - `normelog SPACE TAB` — only spacing/tab related errors
 
 See `normelog -h` for full help.
-
