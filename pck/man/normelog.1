@@ -1,0 +1,95 @@
+.TH NORMELOG 1 "August 2025" "1.0" "User Commands"
+.SH NAME
+normelog \- analyze and filter norminette output with enhanced statistics
+.SH SYNOPSIS
+.B normelog
+[\fIOPTION\fR] [\fIERROR_TYPE\fR...]
+.SH DESCRIPTION
+.B normelog
+runs norminette with specific flags and provides detailed analysis of the results. It shows statistics about correct and incorrect files, counts error types, and allows filtering by specific error patterns.
+.PP
+The command automatically uses the following norminette flags:
+.RS
+.IP \(bu 2
+\-R CheckForbidenSourceHeader
+.IP \(bu 2
+\-\-use\-gitignore
+.RE
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help
+Display help message and exit.
+.SH ARGUMENTS
+.TP
+.B ERROR_TYPE...
+One or more error type patterns to filter results. The patterns are case-insensitive and use partial matching. Multiple patterns are combined with OR logic.
+.PP
+Common norminette error types include:
+.RS
+.IP \(bu 2
+FORBIDDEN_KEYWORD \- Use of forbidden keywords
+.IP \(bu 2
+INVALID_HEADER \- Header format issues
+.IP \(bu 2
+LINE_TOO_LONG \- Lines exceeding character limit
+.IP \(bu 2
+SPACE_BEFORE_TAB \- Whitespace formatting issues
+.IP \(bu 2
+TAB_INSTEAD_SPACE \- Tab/space usage errors
+.IP \(bu 2
+TRAILING_SPACE \- Trailing whitespace
+.IP \(bu 2
+EMPTY_LINE_EOF \- Empty lines at end of file
+.IP \(bu 2
+MISSING_IDENTIFIER \- Missing function/variable names
+.IP \(bu 2
+TOO_MANY_VARIABLES \- Variable count exceeded
+.IP \(bu 2
+TOO_MANY_FUNCTIONS \- Function count exceeded
+.IP \(bu 2
+BRACE_NEWLINE \- Brace positioning issues
+.IP \(bu 2
+INDENT_BRANCH \- Indentation in branches
+.RE
+.SH OUTPUT
+.SS Without arguments:
+Shows summary of correct vs incorrect files, complete error type statistics, and total error count.
+.SS With error type arguments:
+Shows filtered results grouped by file, displaying:
+.RS
+.IP \(bu 2
+File name
+.IP \(bu 2
+Error type, line number, column number, and description
+.IP \(bu 2
+Statistics for filtered errors only
+.IP \(bu 2
+Total count of filtered errors
+.RE
+.SH EXAMPLES
+.TP
+.B normelog
+Show complete analysis of all norminette errors
+.TP
+.B normelog FORBIDDEN
+Show only errors containing "FORBIDDEN" in the error type
+.TP
+.B normelog INVALID_HEADER LINE_TOO_LONG
+Show errors matching either "INVALID_HEADER" or "LINE_TOO_LONG"
+.TP
+.B normelog SPACE TAB
+Show all spacing and tab-related errors
+.SH FILES
+The script processes all .c and .h files in the current directory and subdirectories, respecting .gitignore rules.
+.SH EXIT STATUS
+.TP
+.B 0
+Success
+.TP
+.B 1
+Error occurred during execution
+.SH AUTHOR
+Custom norminette analysis tool for 42 School projects.
+.SH SEE ALSO
+.BR norminette (1),
+.BR git-ls-files (1)

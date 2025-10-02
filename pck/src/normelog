@@ -1,0 +1,468 @@
+#!/usr/bin/env bash
+
+VERSION="1.0.10"
+
+# Parse command line arguments for directory flags
+directories=()
+excluded_directories=()
+filtered_args=()
+show_all_details=false
+use_gitignore=true
+
+while [[ $# -gt 0 ]]; do
+case $1 in
+        -v|--version)
+            echo "normelog version $VERSION"
+            exit 0
+            ;;
+        -a)
+            # Show all errors with detailed per-file listing
+            show_all_details=true
+            ;;
+        -I|--ignore-gitignore)
+            # Disable passing --use-gitignore when no directories are specified
+            use_gitignore=false
+            ;;
+        -d*)
+            # Handle -d<directory> format
+            if [[ ${#1} -gt 2 ]]; then
+                directories+=("${1#-d}")
+            # Handle -d <directory> format
+            elif [[ -n $2 && $2 != -* ]]; then
+                directories+=("$2")
+                shift
+            else
+                echo "Error: -d flag requires a directory argument" >&2
+                exit 1
+            fi
+            ;;
+        --directory=*)
+            # Handle --directory=<directory> format
+            directories+=("${1#--directory=}")
+            ;;
+        -n*)
+            # Handle -n<directory> format (exclude dir)
+            if [[ ${#1} -gt 2 ]]; then
+                excluded_directories+=("${1#-n}")
+            # Handle -n <directory> format
+            elif [[ -n $2 && $2 != -* ]]; then
+                excluded_directories+=("$2")
+                shift
+            else
+                echo "Error: -n flag requires a directory argument" >&2
+                exit 1
+            fi
+            ;;
+        --no-directory=*)
+            # Handle --no-directory=<directory> format
+            excluded_directories+=("${1#--no-directory=}")
+            ;;
+        *)
+            # Keep other arguments for error type filtering
+            filtered_args+=("$1")
+            ;;
+    esac
+    shift
+done
+
+# Set arguments back to filtered args for later processing
+set -- "${filtered_args[@]}"
+
+# Build norminette command
+if [[ ${#directories[@]} -eq 0 ]]; then
+    # No directories specified
+    if [[ "$use_gitignore" = true ]]; then
+        # Use gitignore rules by default
+        output=$(norminette -R CheckForbidenSourceHeader --use-gitignore)
+    else
+        # Ignore .gitignore (scan all files)
+        output=$(norminette -R CheckForbidenSourceHeader)
+    fi
+else
+    # Validate directories exist
+    for dir in "${directories[@]}"; do
+        if [[ ! -d "$dir" ]]; then
+            echo "Error: Directory '$dir' does not exist" >&2
+            exit 1
+        fi
+    done
+    
+    # Run norminette on specified directories
+    output=$(norminette -R CheckForbidenSourceHeader "${directories[@]}")
+fi
+
+# If exclusions were provided, filter out matching directories from the output
+if [[ ${#excluded_directories[@]} -gt 0 ]]; then
+    filtered_output=""
+    current_file=""
+    exclude_current=false
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^[^[:space:]]+\.(c|h):[[:space:]]*(OK!|Error!) ]]; then
+            current_file=$(echo "$line" | sed 's/:[[:space:]]*.*//')
+            exclude_current=false
+            for ex in "${excluded_directories[@]}"; do
+                ex="${ex%/}"
+                if [[ "$current_file" == "$ex" || "$current_file" == $ex/* ]]; then
+                    exclude_current=true
+                    break
+                fi
+            done
+            if [ "$exclude_current" = false ]; then
+                if [ -z "$filtered_output" ]; then
+                    filtered_output="$line"
+                else
+                    filtered_output="$filtered_output\n$line"
+                fi
+            fi
+        elif [[ "$line" =~ ^Error:[[:space:]] ]]; then
+            if [ "$exclude_current" = false ]; then
+                if [ -z "$filtered_output" ]; then
+                    filtered_output="$line"
+                else
+                    filtered_output="$filtered_output\n$line"
+                fi
+            fi
+        fi
+    done <<< "$output"
+    output="$filtered_output"
+fi
+
+# Function to show usage
+show_usage() {
+    cat << 'EOF'
+NAME
+    normelog - Analyze and filter norminette output with enhanced statistics
+
+SYNOPSIS
+    normelog [OPTION] [DIRECTORY_OPTION...] [ERROR_TYPE...]
+
+DESCRIPTION
+    This command runs norminette with specific flags and provides detailed analysis
+    of the results. It shows statistics about correct and incorrect files, counts
+    error types, and allows filtering by specific error patterns.
+    
+    The command automatically uses the following norminette flags:
+        -R CheckForbidenSourceHeader
+        --use-gitignore (only when no directories are specified; disable with -I or --ignore-gitignore)
+
+OPTIONS
+    -h, --help
+        Display this help message and exit.
+        
+    -v, --version
+        Show script version (currently 1.0.10).
+        
+    -a
+        Show all errors with detailed per-file listing (equivalent to including
+        all error types). Can be combined with exclusion patterns (e.g., -a -FOO)
+        to hide specific error types.
+        
+    -I, --ignore-gitignore
+        Do not pass --use-gitignore when no directories are specified. This scans
+        all files, including those ignored by .gitignore.
+        
+    -d<directory>
+        Analyze the specified directory. Can be used multiple times.
+        
+    -d <directory>
+        Analyze the specified directory (with space). Can be used multiple times.
+        
+    --directory=<directory>
+        Analyze the specified directory. Can be used multiple times.
+        
+    -n<directory>
+        Exclude the specified directory from analysis. Can be used multiple times.
+        
+    -n <directory>
+        Exclude the specified directory (with space). Can be used multiple times.
+        
+    --no-directory=<directory>
+        Exclude the specified directory from analysis. Can be used multiple times.
+
+ARGUMENTS
+    ERROR_TYPE...
+        One or more error type patterns to filter results. The patterns are
+        case-insensitive and use partial matching. Multiple patterns are combined
+        with OR logic.
+        
+        Use - prefix to exclude error types (e.g., -TOO_MANY_VARS_FUNC)
+        Exclusion patterns are applied after inclusion patterns.
+        
+        Common norminette error types include:
+            FORBIDDEN_KEYWORD    - Use of forbidden keywords
+            INVALID_HEADER       - Header format issues
+            LINE_TOO_LONG        - Lines exceeding character limit
+            SPACE_BEFORE_TAB     - Whitespace formatting issues
+            TAB_INSTEAD_SPACE    - Tab/space usage errors
+            TRAILING_SPACE       - Trailing whitespace
+            EMPTY_LINE_EOF       - Empty lines at end of file
+            MISSING_IDENTIFIER   - Missing function/variable names
+            TOO_MANY_VARIABLES   - Variable count exceeded
+            TOO_MANY_FUNCTIONS   - Function count exceeded
+            BRACE_NEWLINE        - Brace positioning issues
+            INDENT_BRANCH        - Indentation in branches
+
+OUTPUT
+    Without arguments:
+        Shows summary of correct vs incorrect files, complete error type
+        statistics, and total error count.
+        
+    With error type arguments:
+        Shows filtered results grouped by file, displaying:
+        - File name
+        - Error type, line number, column number, and description
+        - Statistics for filtered errors only
+        - Total count of filtered errors
+
+EXAMPLES
+    normelog
+        Show complete analysis of all norminette errors in current directory
+        
+    normelog -d src
+        Analyze only the 'src' directory
+        
+    normelog -n build
+        Analyze everything except the 'build' directory
+        
+    normelog -d src -n src/generated
+        Analyze 'src' but exclude the 'src/generated' subdirectory from results
+        
+    normelog -I
+        Analyze without applying .gitignore (scan all files in current tree)
+        
+    normelog --ignore-gitignore -a
+        Show detailed errors for all files, ignoring .gitignore rules
+        
+    normelog -dsrc -dinclude
+        Analyze both 'src' and 'include' directories
+        
+    normelog -d src -d tests
+        Analyze 'src' and 'tests' directories (with spaces)
+        
+    normelog --directory=libft --directory=src
+        Analyze 'libft' and 'src' directories using long format
+        
+    normelog -d src FORBIDDEN
+        Show only "FORBIDDEN" errors in the 'src' directory
+        
+    normelog FORBIDDEN
+        Show only errors containing "FORBIDDEN" in the error type
+        
+    normelog INVALID_HEADER LINE_TOO_LONG
+        Show errors matching either "INVALID_HEADER" or "LINE_TOO_LONG"
+        
+    normelog SPACE TAB
+        Show all spacing and tab-related errors
+        
+    normelog TOO -TOO_MANY_VARS_FUNC
+        Show all errors containing "TOO" except "TOO_MANY_VARS_FUNC"
+        
+    normelog -SPACE_EMPTY_LINE -WRONG_SCOPE_COMMENT
+        Show all errors except those matching the excluded patterns
+
+FILES
+    Without directory flags: The script processes all .c and .h files in the
+    current directory and subdirectories, respecting .gitignore rules. Use -I to
+    ignore .gitignore rules.
+    
+    With directory flags: The script processes all .c and .h files in the
+    specified directories only.
+    
+    Exclusions: When exclusion options are provided (-n/--no-directory), files
+    inside those directories are removed from the analysis results.
+
+EXIT STATUS
+    0   Success
+    1   Error occurred during execution
+
+AUTHOR
+    Author: GreenLass000 (GitHub) | marcnava (42 intra) | Secondary GitHub: marcnava-42cursus
+
+SEE ALSO
+    norminette -h, git-ls-files(1)
+
+EOF
+}
+
+# Check if help is requested
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    show_usage
+    exit 0
+fi
+
+ok_files=$(echo "$output" | grep "OK!" | wc -l)
+error_files=$(echo "$output" | grep "Error!" | wc -l)
+
+echo -e "\033[32mCorrect files: $ok_files\033[0m"
+echo -e "\033[31mIncorrect files: $error_files\033[0m"
+
+# Extract error lines only
+error_lines=$(echo "$output" | grep "Error:")
+
+# If arguments are provided or -a is set, show detailed per-file listing
+if [ $# -gt 0 ] || [ "$show_all_details" = true ]; then
+    echo ""
+    if [ "$show_all_details" = true ] && [ $# -eq 0 ]; then
+        echo "Showing all errors with details"
+    else
+        echo "Filtering by error types: $@"
+    fi
+    echo "========================================"
+    
+    # Separate include and exclude patterns
+    include_patterns=()
+    exclude_patterns=()
+    
+    for arg in "$@"; do
+        if [[ "$arg" == -* ]]; then
+            # Remove the leading - and add to exclude patterns
+            exclude_patterns+=("${arg#-}")
+        else
+            # Add to include patterns
+            include_patterns+=("$arg")
+        fi
+    done
+    
+    # Create include pattern (OR logic)
+    include_pattern=""
+    for pattern in "${include_patterns[@]}"; do
+        if [ -z "$include_pattern" ]; then
+            include_pattern="$pattern"
+        else
+            include_pattern="$include_pattern\|$pattern"
+        fi
+    done
+    
+    # Create exclude pattern (OR logic)
+    exclude_pattern=""
+    for pattern in "${exclude_patterns[@]}"; do
+        if [ -z "$exclude_pattern" ]; then
+            exclude_pattern="$pattern"
+        else
+            exclude_pattern="$exclude_pattern\|$pattern"
+        fi
+    done
+    
+    # First, filter error lines by error type only (not the full line)
+    filtered_errors=""
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^Error:[[:space:]] ]]; then
+            # Extract error type
+            error_type=$(echo "$line" | sed 's/^Error:[[:space:]]*\([A-Z_]\+\).*/\1/')
+            
+            # Check inclusion patterns first (if any)
+            include_match=false
+            if [ -z "$include_pattern" ]; then
+                # If no include patterns, include everything
+                include_match=true
+            elif echo "$error_type" | grep -qi "$include_pattern"; then
+                include_match=true
+            fi
+            
+            # Check exclusion patterns (if any)
+            exclude_match=false
+            if [ -n "$exclude_pattern" ] && echo "$error_type" | grep -qi "$exclude_pattern"; then
+                exclude_match=true
+            fi
+            
+            # Include if matches include pattern and doesn't match exclude pattern
+            if [ "$include_match" = true ] && [ "$exclude_match" = false ]; then
+                if [ -z "$filtered_errors" ]; then
+                    filtered_errors="$line"
+                else
+                    filtered_errors="$filtered_errors\n$line"
+                fi
+            fi
+        fi
+    done <<< "$error_lines"
+    
+    # Check if any errors were found
+    if [ -z "$filtered_errors" ]; then
+        echo -e "\033[32mNo norminette errors for: $@\033[0m"
+        exit 0
+    fi
+    
+    # Group errors by file and display
+    echo ""
+    
+    # Get full norminette output and process it
+    current_file=""
+    current_file_has_errors=false
+    
+    while IFS= read -r line; do
+        # Check if this line indicates a file status
+        if [[ "$line" =~ ^[^[:space:]]+\.(c|h):[[:space:]]*(OK!|Error!) ]]; then
+            # If previous file had filtered errors, close its section
+            if [ "$current_file_has_errors" = true ]; then
+                echo ""
+            fi
+            
+            # Extract filename
+            current_file=$(echo "$line" | sed 's/:[[:space:]]*.*//')
+            current_file_has_errors=false
+            
+        # Check if this line is an error line that matches our filter
+        elif [[ "$line" =~ ^Error:[[:space:]] ]]; then
+            # Extract error type first
+            error_type=$(echo "$line" | sed 's/^Error:[[:space:]]*\([A-Z_]\+\).*/\1/')
+            
+            # Check inclusion patterns first (if any)
+            include_match=false
+            if [ -z "$include_pattern" ]; then
+                # If no include patterns, include everything
+                include_match=true
+            elif echo "$error_type" | grep -qi "$include_pattern"; then
+                include_match=true
+            fi
+            
+            # Check exclusion patterns (if any)
+            exclude_match=false
+            if [ -n "$exclude_pattern" ] && echo "$error_type" | grep -qi "$exclude_pattern"; then
+                exclude_match=true
+            fi
+            
+            # Display if matches include pattern and doesn't match exclude pattern
+            if [ "$include_match" = true ] && [ "$exclude_match" = false ]; then
+                # If this is the first error for this file, print the filename
+                if [ "$current_file_has_errors" = false ]; then
+                    echo "$current_file"
+                    current_file_has_errors=true
+                fi
+                
+                # Extract and format error information
+                line_num=$(echo "$line" | sed 's/.*line:[[:space:]]*\([0-9]\+\).*/\1/')
+                col_num=$(echo "$line" | sed 's/.*col:[[:space:]]*\([0-9]\+\).*/\1/')
+                description=$(echo "$line" | sed 's/^Error:[[:space:]]*[A-Z_]\+[[:space:]]*([^)]*):[[:space:]]*\(.*\)/\1/')
+                
+                printf "    %s (line: %3s, col: %3s): %s\n" "$error_type" "$line_num" "$col_num" "$description"
+            fi
+        fi
+    done <<< "$output"
+    
+    # Show statistics for filtered errors
+    echo ""
+    echo "Filtered error count:"
+    echo "-------------------------"
+    echo -e "$filtered_errors" | sed -e 's/.*Error: \([A-Z_]*\).*/\1/g' | sort | uniq -c | sort -nr | while read count error_type; do
+        printf "%-25s: %s\n" "$error_type" "$count"
+    done
+    
+    filtered_count=$(echo -e "$filtered_errors" | wc -l)
+    echo ""
+    echo "Total filtered errors: $filtered_count"
+    
+else
+    # Original behavior when no arguments are provided
+    # Count occurrences of each error type
+    echo ""
+    echo "Error type count:"
+    echo "--------------------"
+    echo "$error_lines" | sed -e 's/.*Error: \([A-Z_]*\).*/\1/g' | sort | uniq -c | sort -nr | while read count error_type; do
+        printf "%-25s: %s\n" "$error_type" "$count"
+    done
+    
+    # Display total error count
+    total_errors=$(echo "$error_lines" | wc -l)
+    echo ""
+    echo "Total errors: $total_errors"
+fi

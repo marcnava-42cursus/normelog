@@ -1,0 +1,203 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Script version; keep in sync with releases
+VERSION="1.0.10"
+
+show_usage() {
+  sed -n '1,200p' <<'EOF'
+NAME
+  normelog - Analyze and filter norminette output with enhanced statistics
+
+SYNOPSIS
+  normelog [OPTION] [DIRECTORY_OPTION...] [ERROR_TYPE...]
+
+OPTIONS
+  -h, --help           Show this help and exit
+  -v, --version        Show version and exit
+  -a                   Show all errors with detailed per-file listing
+  -I, --ignore-gitignore  Do not pass --use-gitignore when no directories are specified
+  -d <dir> | -d<dir> | --directory=<dir>
+                       Analyze only these directories (repeatable)
+  -n <dir> | -n<dir> | --no-directory=<dir>
+                       Exclude these directories from results (repeatable)
+
+Notes
+  When no directories are given, normelog uses norminette with:
+    -R CheckForbidenSourceHeader --use-gitignore
+
+Examples
+  normelog
+  normelog -a
+  normelog SPACE TAB
+  normelog -d src -n build FORBIDDEN
+EOF
+}
+
+directories=()
+excluded_directories=()
+filtered_args=()
+show_all_details=false
+use_gitignore=true
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -h|--help) show_usage; exit 0 ;;
+    -v|--version) echo "normelog $VERSION"; exit 0 ;;
+    -a) show_all_details=true ;;
+    -I|--ignore-gitignore) use_gitignore=false ;;
+    -d*)
+      if [[ ${#1} -gt 2 ]]; then directories+=("${1#-d}")
+      elif [[ -n ${2:-} && $2 != -* ]]; then directories+=("$2"); shift
+      else echo "Error: -d requires a directory" >&2; exit 1; fi ;;
+    --directory=*) directories+=("${1#--directory=}") ;;
+    -n*)
+      if [[ ${#1} -gt 2 ]]; then excluded_directories+=("${1#-n}")
+      elif [[ -n ${2:-} && $2 != -* ]]; then excluded_directories+=("$2"); shift
+      else echo "Error: -n requires a directory" >&2; exit 1; fi ;;
+    --no-directory=*) excluded_directories+=("${1#--no-directory=}") ;;
+    *) filtered_args+=("$1") ;;
+  esac
+  shift
+done
+
+set -- "${filtered_args[@]:-}"
+
+if ! command -v norminette >/dev/null 2>&1; then
+  echo "Error: norminette not found in PATH" >&2
+  exit 1
+fi
+
+if [[ ${#directories[@]} -eq 0 ]]; then
+  if [[ "$use_gitignore" == true ]]; then
+    output=$(norminette -R CheckForbidenSourceHeader --use-gitignore || true)
+  else
+    output=$(norminette -R CheckForbidenSourceHeader || true)
+  fi
+else
+  for dir in "${directories[@]}"; do
+    [[ -d "$dir" ]] || { echo "Error: Directory '$dir' does not exist" >&2; exit 1; }
+  done
+  output=$(norminette -R CheckForbidenSourceHeader "${directories[@]}" || true)
+fi
+
+if [[ ${#excluded_directories[@]} -gt 0 ]]; then
+  filtered_output=""
+  current_file=""
+  exclude_current=false
+  while IFS= read -r line; do
+    if [[ "$line" =~ ^[^[:space:]]+\.(c|h):[[:space:]]*(OK!|Error!) ]]; then
+      current_file=${line%%:*}
+      exclude_current=false
+      for ex in "${excluded_directories[@]}"; do
+        ex="${ex%/}"
+        if [[ "$current_file" == "$ex" || "$current_file" == $ex/* ]]; then
+          exclude_current=true; break
+        fi
+      done
+      [[ $exclude_current == false ]] && filtered_output+="$line
+"
+    elif [[ "$line" =~ ^Error:[[:space:]] ]] && [[ $exclude_current == false ]]; then
+      filtered_output+="$line
+"
+    fi
+  done <<< "$output"
+  output="$filtered_output"
+fi
+
+ok_files=$(echo "$output" | grep -c "OK!" || true)
+error_files=$(echo "$output" | grep -c "Error!" || true)
+printf "\033[32mCorrect files: %s\033[0m\n" "$ok_files"
+printf "\033[31mIncorrect files: %s\033[0m\n" "$error_files"
+
+error_lines=$(echo "$output" | grep "^Error:" || true)
+
+if [[ $# -gt 0 || "$show_all_details" == true ]]; then
+  echo ""
+  if [[ "$show_all_details" == true && $# -eq 0 ]]; then
+    echo "Showing all errors with details"
+  else
+    echo "Filtering by error types: $*"
+  fi
+  echo "========================================"
+
+  include_patterns=()
+  exclude_patterns=()
+  for arg in "$@"; do
+    if [[ "$arg" == -* ]]; then exclude_patterns+=("${arg#-}"); else include_patterns+=("$arg"); fi
+  done
+
+  include_pattern=""
+  for pattern in "${include_patterns[@]:-}"; do
+    [[ -z "$include_pattern" ]] && include_pattern="$pattern" || include_pattern+="\|$pattern"
+  done
+
+  exclude_pattern=""
+  for pattern in "${exclude_patterns[@]:-}"; do
+    [[ -z "$exclude_pattern" ]] && exclude_pattern="$pattern" || exclude_pattern+="\|$pattern"
+  done
+
+  filtered_errors=""
+  while IFS= read -r line; do
+    [[ "$line" =~ ^Error:[[:space:]] ]] || continue
+    error_type=$(echo "$line" | sed 's/^Error:[[:space:]]*\([A-Z_]\+\).*/\1/')
+    include_match=false
+    if [[ -z "$include_pattern" ]]; then include_match=true
+    elif echo "$error_type" | grep -qi "$include_pattern"; then include_match=true; fi
+    exclude_match=false
+    if [[ -n "$exclude_pattern" ]] && echo "$error_type" | grep -qi "$exclude_pattern"; then exclude_match=true; fi
+    if [[ "$include_match" == true && "$exclude_match" == false ]]; then
+      filtered_errors+="$line
+"
+    fi
+  done <<< "$error_lines"
+
+  if [[ -z "$filtered_errors" ]]; then
+    printf "\033[32mNo norminette errors for: %s\033[0m\n" "$*"
+    exit 0
+  fi
+
+  echo ""
+  current_file=""; current_file_has_errors=false
+  while IFS= read -r line; do
+    if [[ "$line" =~ ^[^[:space:]]+\.(c|h):[[:space:]]*(OK!|Error!) ]]; then
+      [[ "$current_file_has_errors" == true ]] && echo ""
+      current_file=${line%%:*}; current_file_has_errors=false
+    elif [[ "$line" =~ ^Error:[[:space:]] ]]; then
+      error_type=$(echo "$line" | sed 's/^Error:[[:space:]]*\([A-Z_]\+\).*/\1/')
+      include_match=false
+      if [[ -z "$include_pattern" ]]; then include_match=true
+      elif echo "$error_type" | grep -qi "$include_pattern"; then include_match=true; fi
+      exclude_match=false
+      if [[ -n "$exclude_pattern" ]] && echo "$error_type" | grep -qi "$exclude_pattern"; then exclude_match=true; fi
+      if [[ "$include_match" == true && "$exclude_match" == false ]]; then
+        if [[ "$current_file_has_errors" == false ]]; then echo "$current_file"; current_file_has_errors=true; fi
+        line_num=$(echo "$line" | sed 's/.*line:[[:space:]]*\([0-9]\+\).*/\1/')
+        col_num=$(echo "$line" | sed 's/.*col:[[:space:]]*\([0-9]\+\).*/\1/')
+        description=$(echo "$line" | sed 's/^Error:[[:space:]]*[A-Z_]\+[[:space:]]*([^)]*):[[:space:]]*\(.*\)/\1/')
+        printf "    %s (line: %3s, col: %3s): %s\n" "$error_type" "$line_num" "$col_num" "$description"
+      fi
+    fi
+  done <<< "$output"
+
+  echo ""
+  echo "Filtered error count:"
+  echo "-------------------------"
+  echo -e "$filtered_errors" | sed -e 's/.*Error: \([A-Z_]*\).*/\1/g' | sort | uniq -c | sort -nr | while read -r count error_type; do
+    printf "%-25s: %s\n" "$error_type" "$count"
+  done
+  filtered_count=$(echo -e "$filtered_errors" | wc -l)
+  echo ""
+  echo "Total filtered errors: $filtered_count"
+else
+  echo ""
+  echo "Error type count:"
+  echo "--------------------"
+  echo "$error_lines" | sed -e 's/.*Error: \([A-Z_]*\).*/\1/g' | sort | uniq -c | sort -nr | while read -r count error_type; do
+    printf "%-25s: %s\n" "$error_type" "$count"
+  done
+  total_errors=$(echo "$error_lines" | wc -l)
+  echo ""
+  echo "Total errors: $total_errors"
+fi
+

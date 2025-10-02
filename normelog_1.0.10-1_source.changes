@@ -1,0 +1,47 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Format: 1.8
+Date: Wed, 03 Sep 2025 14:00:00 +0200
+Source: normelog
+Built-For-Profiles: noudeb
+Architecture: source
+Version: 1.0.10-1
+Distribution: noble
+Urgency: medium
+Maintainer: Marcos Navarro <marcosnavarromartin@gmail.com>
+Changed-By: Marcos Navarro <marcosnavarromartin@gmail.com>
+Changes:
+ normelog (1.0.10-1) noble; urgency=medium
+ .
+   * Initial release of normelog.
+Checksums-Sha1:
+ 6677be5960cc1f05b9d95fdeaa03e5d68e582f23 1565 normelog_1.0.10-1.dsc
+ e1b73211ec7ba9e2f29d98cc28d9d84ddd40fecf 6215 normelog_1.0.10.orig.tar.gz
+ 8685c231495c66e53e0beb65ebf4bd5ab12fb689 1420 normelog_1.0.10-1.debian.tar.xz
+ 5b0cf5a03e937d4e27a9f4f698dca47856e655e9 7108 normelog_1.0.10-1_source.buildinfo
+Checksums-Sha256:
+ e0e13af597d304388921feb6d31bcdf9a5e64b2816b5ae02bddf657e6bc46db8 1565 normelog_1.0.10-1.dsc
+ 7e87615c353e1cd88b9ea28450fc9abfa6aae38022d1f602ec5754c6e0dbb78e 6215 normelog_1.0.10.orig.tar.gz
+ d2f10dbef522fb1a42a4cc071fb63ba5205f77a118ff457ccecf6115176d42b1 1420 normelog_1.0.10-1.debian.tar.xz
+ 4d2a610f764dc9727a79e12f90bd2356abacbb4f269aebd8870a684bfd70147a 7108 normelog_1.0.10-1_source.buildinfo
+Files:
+ af81e05f9e17343986153ff8d681083a 1565 utils optional normelog_1.0.10-1.dsc
+ f57b26ee91e4e0c1d49277f540974287 6215 utils optional normelog_1.0.10.orig.tar.gz
+ 82cdf8f6c02f7130315e4c96314bbd61 1420 utils optional normelog_1.0.10-1.debian.tar.xz
+ cebe29f5886e02c28556cfb69bf18321 7108 utils optional normelog_1.0.10-1_source.buildinfo
+
+-----BEGIN PGP SIGNATURE-----
+
+iQGzBAEBCgAdFiEE8PvGSomeNWRUs3y9xfdeMu48+MsFAmi7APwACgkQxfdeMu48
++MsQIgv/feOW2RELtVDv0iIXU6apSPlO42RkRvdDP3j42Wh02z2f5u2gulXipGTG
+zO/GbJSg4HA0Gtfhzy2qSA0e5q8rWUGOdf2eucR8M1HoS/Jd7/olSA/c8+3LMlY+
+1pNa8LsrmzSlyFlQD27xWVyhkIgFznIw/1QIpFZVEtW9jg8300MDit6oSrejlfdZ
+BY8miaYeuZvjeZAkhF+/PzFCxubQyotUq0uODNjTV9dXa6xVsY074snktyABGu5W
+lZjUHRTGwNHWfFO9VXg9xL6UBf9tUHxRrHCQB3VxcT1X3NC0HSdo0JESxJdCBFdX
+8d0KbarVqeB3qQRJXhRxadyeV9On1pt6K01xNd5rfGdaACcDZNNWI6Abl9NEiX5n
+Ppe+ZABnKeAvc5KuY657JRw1mC19iOq89aDbkoEoT0NhCAnVp69N4PrOOZcrGCd/
+Lr1wrrhbLzglxaqDV5hH5nykVx+l0Ln1fxf/4JKHMYKAqnAPMWPZX46NxC3/j7uX
+A2ladN8W
+=ywI/
+-----END PGP SIGNATURE-----
