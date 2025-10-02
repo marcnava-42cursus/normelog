@@ -1,14 +1,14 @@
 # normelog
 
-Portable helper around `norminette` to summarize and filter errors. Modular layout under `normelog/` suitable for GitHub Releases.
+Portable helper around `norminette` to summarize and filter errors. Modular layout at repo root suitable for GitHub Releases.
 
 ## Install
 
 - Download the release asset and place a symlink to the entrypoint:
 
 ```
-chmod +x normelog/bin/normelog
-sudo ln -sf "$PWD/normelog/bin/normelog" /usr/local/bin/normelog
+chmod +x bin/normelog
+sudo ln -sf "$PWD/bin/normelog" /usr/local/bin/normelog
 ```
 
 ## Usage
