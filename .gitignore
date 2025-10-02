@@ -1,0 +1,14 @@
+# Build/package artifacts
+*.tar.gz
+*.dsc
+*.buildinfo
+*.changes
+*.deb
+*.ppa.upload
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
