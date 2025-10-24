@@ -8,6 +8,8 @@ NL_EXCLUDE_DIRS=()
 NL_INCLUDE_TYPES=()
 NL_EXCLUDE_TYPES=()
 NL_CHDIR=""
+NL_DO_UPDATE=0
+NL_NO_UPDATE_CHECK=0
 
 nl_flags_help() {
 cat <<'HLP'
@@ -22,6 +24,8 @@ Usage: normelog [OPTIONS] [ERROR_TYPE...]
 	-n <dir> | -n<dir> | --no-directory=<dir>
 	--json                  Output JSON
 	--debug                 Debug logs
+	--update                Check for and install updates
+	--no-update-check       Disable automatic update check
 	Patterns:
 	TYPE ...      include
 	-TYPE ...     exclude
@@ -70,6 +74,12 @@ nl_flags_parse() {
 				;;
 			--debug)
 				NL_DEBUG=1
+				;;
+			--update)
+				NL_DO_UPDATE=1
+				;;
+			--no-update-check)
+				NL_NO_UPDATE_CHECK=1
 				;;
 			-d*)
 				if [[ ${#1} -gt 2 ]]; then

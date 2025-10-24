@@ -34,6 +34,7 @@ fi
 . "$LIB_DIR/format_json.sh"
 . "$LIB_DIR/update_check.sh"
 . "$LIB_DIR/update_apply.sh"
+. "$LIB_DIR/plugins.sh"
 
 main() {
   nl_env_init
@@ -43,6 +44,10 @@ main() {
   # Early exits for meta flags before any other logic
   if [[ "${NL_SHOW_VERSION:-0}" -eq 1 ]]; then
 	echo "normelog ${NL_VERSION}"; exit 0
+  fi
+  if [[ "${NL_DO_UPDATE:-0}" -eq 1 ]]; then
+	nl_update_apply
+	exit $?
   fi
   if [[ "${NL_SHOW_HELP:-0}" -eq 1 ]]; then
 	local man_file=""
@@ -76,7 +81,13 @@ main() {
   fi
   nl_config_load "$@"
 
+  # Load plugins
+  nl_plugins_load
+
   # (version/help handled above)
+
+  # Call pre-norminette hook
+  nl_hook_pre_norminette
 
   nl_log_debug "Running norminette..."
   local output
@@ -101,6 +112,9 @@ main() {
   local records
   records=$(nl_parse_output <<<"$output")
 
+  # Call post-parse hook
+  nl_hook_post_parse
+
   nl_log_debug "Filtering by error types..."
   local filtered
   filtered=$(nl_filter_errors <<<"$records")
@@ -109,10 +123,21 @@ main() {
   local stats
   stats=$(nl_compute_stats <<<"$filtered")
 
+  # Call post-stats hook
+  nl_hook_post_stats
+
+  # Call pre-format hook
+  nl_hook_pre_format
+
   if [[ "$NL_OUTPUT" == "json" ]]; then
 	nl_format_json "$filtered" "$stats"
   else
 	nl_format_text "$filtered" "$stats"
+  fi
+
+  # Check for updates (unless disabled)
+  if [[ "${NL_NO_UPDATE_CHECK:-0}" -eq 0 ]]; then
+	nl_update_check
   fi
 }
 

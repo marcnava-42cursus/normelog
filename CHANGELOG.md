@@ -7,6 +7,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - 2025-10-24
+
+### 🎉 Phase 2 Release - Core Missing Features
+
+This release implements all Phase 2 features from TODO.md, adding essential functionality for extensibility, automated updates, and comprehensive testing.
+
+### ✨ Added
+
+#### Plugin System
+- **Hook-Based Architecture**: Extensible plugin system with 4 hook points throughout the pipeline
+  - `nl_hook_pre_norminette()` - Called before norminette execution
+  - `nl_hook_post_parse()` - Called after parsing output
+  - `nl_hook_post_stats()` - Called after computing statistics
+  - `nl_hook_pre_format()` - Called before formatting output
+- **Automatic Plugin Loading**: Discovers and loads `.sh` files from `plugins.d/` in alphabetical order
+- **Error Handling**: Graceful handling of broken plugins with logging
+- **Documentation**: Comprehensive plugin documentation in `plugins.d/.gitkeep`
+
+#### Auto-Update System
+- **Update Check Mechanism**: Automatic update checking via GitHub Releases API
+  - Checks once per 24 hours (cached in `$XDG_CACHE_HOME/normelog/`)
+  - 5-second timeout for network requests
+  - Graceful handling of network failures
+  - Version comparison with semantic versioning support
+- **Update Apply Mechanism**: One-command updates from GitHub
+  - Downloads latest release tarball
+  - Extracts and runs `make install` automatically
+  - Supports custom installation prefix
+  - Automatic cleanup of temporary files
+- **New Flags**:
+  - `--update` - Manually trigger update check and installation
+  - `--no-update-check` - Disable automatic update check for single run
+- **New Environment Variable**: `NL_AUTO_UPDATE_CHECK` (default: 1)
+
+#### BATS Test Suite
+- **Comprehensive Test Coverage**: Full test suite using BATS (Bash Automated Testing System)
+  - Unit tests for parse, filter, and stats modules
+  - Integration tests for CLI flags and options
+  - Test fixtures with sample C files and norminette output
+- **Test Infrastructure**:
+  - `tests/run_tests.sh` - Colored test runner with clear output
+  - `tests/unit/` - Module-level unit tests
+  - `tests/integration/` - End-to-end integration tests
+  - `tests/fixtures/` - Sample data and norminette output samples
+- **Makefile Integration**: `make test` runs full test suite
+
+#### Man Page Generation
+- **Version Synchronization**: `scripts/gen-man.sh` automatically updates version and date
+- **Syntax Validation**: Verifies man page syntax with groff
+- **Documentation Updates**: Added sections for plugins, updates, and new flags
+
+### 📚 Documentation
+
+- **README.md**: Major expansion with new sections:
+  - Plugin system documentation with examples and best practices
+  - Auto-update system usage and configuration
+  - BATS test suite documentation
+  - New command-line flags and environment variables
+- **Man Page**: Updated `share/man/normelog.1`:
+  - Plugin system hooks and usage
+  - Update mechanism documentation
+  - New flags: `--update`, `--no-update-check`
+  - Environment variable: `NL_AUTO_UPDATE_CHECK`
+- **PHASE2_IMPLEMENTATION.md**: Complete implementation summary for Phase 2
+
+### 🔧 Changed
+
+- **Pipeline Integration**: Plugin hooks integrated throughout the execution pipeline
+- **Startup Sequence**: Added plugin loading after config loading
+- **Main Function**: Added update check at end of execution (unless disabled)
+
+### 🎯 Impact Summary
+
+**Phase 2 Completion:**
+- ✅ Plugin system - Fully implemented with 4 hooks
+- ✅ Update check - Automatic with caching
+- ✅ Update apply - One-command updates
+- ✅ BATS tests - Comprehensive test coverage
+- ✅ Man page generation - Version synchronization
+
+**New Capabilities:**
+- Extensible architecture via plugins
+- Automatic update notifications
+- Easy one-command updates
+- Reliable test coverage
+- Better documentation
+
+---
+
 ## [0.2.0] - 2025-10-24
 
 ### 🎉 Phase 1 Release - Critical Fixes & Core Functionality
@@ -129,5 +218,6 @@ This release focuses on fixing all critical and medium-priority bugs identified 
 
 ---
 
-[0.2.0]: https://github.com/yourusername/normelog/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/yourusername/normelog/releases/tag/v0.1.0
+[0.3.0]: https://github.com/marcnava-42cursus/normelog/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/marcnava-42cursus/normelog/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/marcnava-42cursus/normelog/releases/tag/v0.1.0

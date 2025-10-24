@@ -1,0 +1,15 @@
+# This directory is for user plugins
+# Drop .sh files here to extend normelog behavior
+#
+# Available hooks:
+# - nl_hook_pre_norminette()  - Called before norminette execution
+# - nl_hook_post_parse()      - Called after parsing, can modify records
+# - nl_hook_post_stats()      - Called after stats computation
+# - nl_hook_pre_format()      - Called before formatting output
+#
+# Example plugin:
+#
+# #!/usr/bin/env bash
+# nl_hook_pre_norminette() {
+#   echo "Running custom checks before norminette..."
+# }
