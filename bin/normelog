@@ -1,10 +1,22 @@
 #!/usr/bin/env bash
 # normelog entrypoint
+set -euo pipefail
 
 # Resolve base dir
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-LIB_DIR="$BASE_DIR/lib"
+
+# Detect if running from installation or development
+if [[ -d "$BASE_DIR/lib/normelog" ]]; then
+	# Installed system-wide (e.g., /usr/local/lib/normelog)
+	LIB_DIR="$BASE_DIR/lib/normelog"
+elif [[ -d "$BASE_DIR/lib" && -f "$BASE_DIR/lib/version.sh" ]]; then
+	# Running from source directory
+	LIB_DIR="$BASE_DIR/lib"
+else
+	echo "Error: Cannot find normelog libraries" >&2
+	exit 1
+fi
 
 # shell environment
 . "$LIB_DIR/env.sh"
@@ -75,6 +87,11 @@ main() {
   if [[ $rc -eq 127 ]]; then
 	nl_log_error "norminette not found in PATH"
 	exit 127
+  fi
+
+  if [[ -z "$output" ]]; then
+	nl_log_error "No C files found or norminette produced no output"
+	exit 0
   fi
 
   nl_log_debug "Applying exclusions..."

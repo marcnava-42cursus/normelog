@@ -2,6 +2,7 @@
 
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
+LIBDIR ?= $(PREFIX)/lib/normelog
 MANDIR ?= $(PREFIX)/share/man/man1
 BASHCOMP_DIR ?= /etc/bash_completion.d
 ZSHCOMP_DIR ?= /usr/share/zsh/site-functions
@@ -21,6 +22,8 @@ release:
 install:
 	install -d "$(BINDIR)"
 	install -m 0755 bin/normelog "$(BINDIR)/normelog"
+	install -d "$(LIBDIR)"
+	install -m 0644 lib/*.sh "$(LIBDIR)/"
 	install -d "$(MANDIR)"
 	install -m 0644 share/man/normelog.1 "$(MANDIR)/normelog.1"
 	@if [ -n "$(BASHCOMP_DIR)" ]; then \
@@ -43,6 +46,7 @@ install:
 
 uninstall:
 	@rm -f "$(BINDIR)/normelog"
+	@rm -rf "$(LIBDIR)"
 	@rm -f "$(MANDIR)/normelog.1"
 	@rm -f "$(BASHCOMP_DIR)/normelog" 2>/dev/null || true
 	@rm -f "$(ZSHCOMP_DIR)/_normelog" 2>/dev/null || true
