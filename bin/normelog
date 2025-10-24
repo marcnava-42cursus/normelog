@@ -30,37 +30,37 @@ main() {
   nl_flags_parse "$@"
   # Early exits for meta flags before any other logic
   if [[ "${NL_SHOW_VERSION:-0}" -eq 1 ]]; then
-    echo "normelog ${NL_VERSION}"; exit 0
+	echo "normelog ${NL_VERSION}"; exit 0
   fi
   if [[ "${NL_SHOW_HELP:-0}" -eq 1 ]]; then
-    local man_file=""
-    for candidate in \
-      "$BASE_DIR/share/man/normelog.1" \
-      "$BASE_DIR/share/man/man1/normelog.1" \
-      "/usr/local/share/man/man1/normelog.1" \
-      "/usr/share/man/man1/normelog.1"; do
-      if [[ -f "$candidate" ]]; then
-        man_file="$candidate"
-        break
-      fi
-    done
-    if [[ -n "$man_file" ]]; then
-      if command -v nroff >/dev/null 2>&1; then
-        nroff -man "$man_file" | sed -e 's/.\x08//g'
-      else
-        cat "$man_file"
-      fi
-    else
-      nl_flags_help
-    fi
-    exit 0
+	local man_file=""
+	for candidate in \
+	  "$BASE_DIR/share/man/normelog.1" \
+	  "$BASE_DIR/share/man/man1/normelog.1" \
+	  "/usr/local/share/man/man1/normelog.1" \
+	  "/usr/share/man/man1/normelog.1"; do
+	  if [[ -f "$candidate" ]]; then
+		man_file="$candidate"
+		break
+	  fi
+	done
+	if [[ -n "$man_file" ]]; then
+	  if command -v nroff >/dev/null 2>&1; then
+		nroff -man "$man_file" | sed -e 's/.\x08//g'
+	  else
+		cat "$man_file"
+	  fi
+	else
+	  nl_flags_help
+	fi
+	exit 0
   fi
   # Change directory if requested
   if [[ -n "${NL_CHDIR:-}" ]]; then
-    if ! cd -- "$NL_CHDIR"; then
-      nl_log_error "Failed to change directory to $NL_CHDIR"
-      exit 1
-    fi
+	if ! cd -- "$NL_CHDIR"; then
+	  nl_log_error "Failed to change directory to $NL_CHDIR"
+	  exit 1
+	fi
   fi
   nl_config_load "$@"
 
@@ -73,8 +73,8 @@ main() {
   rc=$?
   set -e
   if [[ $rc -eq 127 ]]; then
-    nl_log_error "norminette not found in PATH"
-    exit 127
+	nl_log_error "norminette not found in PATH"
+	exit 127
   fi
 
   nl_log_debug "Applying exclusions..."
@@ -93,9 +93,9 @@ main() {
   stats=$(nl_compute_stats <<<"$filtered")
 
   if [[ "$NL_OUTPUT" == "json" ]]; then
-    nl_format_json "$filtered" "$stats"
+	nl_format_json "$filtered" "$stats"
   else
-    nl_format_text "$filtered" "$stats"
+	nl_format_text "$filtered" "$stats"
   fi
 }
 
