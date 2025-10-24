@@ -25,18 +25,18 @@ install:
 	install -m 0644 share/man/normelog.1 "$(MANDIR)/normelog.1"
 	@if [ -n "$(BASHCOMP_DIR)" ]; then \
 	  if install -d "$(BASHCOMP_DIR)" >/dev/null 2>&1; then \
-	    install -m 0644 share/completion/normelog.bash "$(BASHCOMP_DIR)/normelog"; \
-	    echo "installed bash completion to $(BASHCOMP_DIR)"; \
+		install -m 0644 share/completion/normelog.bash "$(BASHCOMP_DIR)/normelog"; \
+		echo "installed bash completion to $(BASHCOMP_DIR)"; \
 	  else \
-	    echo "skip bash completion (cannot write to $(BASHCOMP_DIR))"; \
+		echo "skip bash completion (cannot write to $(BASHCOMP_DIR))"; \
 	  fi; \
 	fi
 	@if [ -n "$(ZSHCOMP_DIR)" ]; then \
 	  if install -d "$(ZSHCOMP_DIR)" >/dev/null 2>&1; then \
-	    install -m 0644 share/completion/_normelog.zsh "$(ZSHCOMP_DIR)/_normelog"; \
-	    echo "installed zsh completion to $(ZSHCOMP_DIR)"; \
+		install -m 0644 share/completion/_normelog.zsh "$(ZSHCOMP_DIR)/_normelog"; \
+		echo "installed zsh completion to $(ZSHCOMP_DIR)"; \
 	  else \
-	    echo "skip zsh completion (cannot write to $(ZSHCOMP_DIR))"; \
+		echo "skip zsh completion (cannot write to $(ZSHCOMP_DIR))"; \
 	  fi; \
 	fi
 	@echo "installed $(BINDIR)/normelog"
