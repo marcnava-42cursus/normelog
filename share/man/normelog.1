@@ -1,0 +1,150 @@
+.TH NORMELOG 1 "October 2025" "1.0.10" "User Commands"
+.SH NAME
+normelog \- Analyzer and filter for norminette with statistics and text/JSON output
+.SH SYNOPSIS
+.B normelog
+[\fIOPTION\fR] [\fIDIRECTORY_OPTION\fR...] [\fIERROR_TYPE\fR...]
+.SH DESCRIPTION
+.B normelog
+runs norminette with sane defaults, filters results, computes statistics, and renders them as human text or JSON. It supports directory inclusion/exclusion, respect or ignore of .gitignore, execution from another directory, and optional plugin hooks.
+.PP
+Internal pipeline:
+.RS
+.IP \(bu 2
+Run norminette with \-R CheckForbidenSourceHeader
+.IP \(bu 2
+Filter excluded directories from the raw output
+.IP \(bu 2
+Parse output into FILE/ERR records
+.IP \(bu 2
+Filter records by error type include/exclude patterns
+.IP \(bu 2
+Compute statistics (OK/ERR counters, totals per type)
+.IP \(bu 2
+Format the final result as text or JSON
+.RE
+.PP
+Requirement: \fBnorminette\fR available in the PATH.
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help
+Show this manual and exit.
+.TP
+.BR \-v ", " \-\-version
+Show version and exit.
+.TP
+.B \-a
+Show detailed per file error listing (does not change counts, only output).
+.TP
+.BR \-I ", " \-\-ignore\-gitignore
+Do not pass \fB\-\-use\-gitignore\fR when no directories are specified (scan all files, even those ignored by .gitignore).
+.TP
+.B \-C \fIDIR\fR, \-\-chdir\ \fIDIR\fR, \-\-chdir=\fIDIR\fR
+Change working directory to \fIDIR\fR before running. Useful to invoke \fBnormelog\fR from outside the project tree.
+.TP
+.BR \-d \fIDIR\fR ", " \-d\fIDIR\fR ", " \-\-directory=\fIDIR\fR
+Analyze only the provided directories (repeatable).
+.TP
+.BR \-n \fIDIR\fR ", " \-n\fIDIR\fR ", " \-\-no\-directory=\fIDIR\fR
+Exclude directories from the results (repeatable).
+.TP
+.B \-\-json
+Emit JSON output.
+.TP
+.B \-\-debug
+Print debug messages to stderr.
+.PP
+Error type arguments:
+.RS
+.IP \(bu 2
+One or more patterns to include. Case insensitive substring match.
+.IP \(bu 2
+Prefix with \- to exclude (for example \-TOO_MANY_VARS_FUNC).
+.IP \(bu 2
+Include patterns are evaluated before exclude patterns.
+.RE
+.SH PATTERN FILTERING
+Examples:
+.RS
+.IP \(bu 2
+\fBnormelog FORBIDDEN\fR \- show only error types that contain FORBIDDEN.
+.IP \(bu 2
+\fBnormelog SPACE TAB\fR \- show types containing SPACE or TAB.
+.IP \(bu 2
+\fBnormelog TOO \-TOO_MANY_VARS_FUNC\fR \- include types with TOO except the excluded one.
+.RE
+.SH DIRECTORIES
+Without \-d/\-\-directory, the current tree is analyzed. By default .gitignore is honored; use \-I to ignore it. With \-d, normelog limits the norminette invocation to the provided directories. \-n performs a post filtering step on resulting records.
+.SH OUTPUT
+.SS Text
+Includes:
+.RS
+.IP \(bu 2
+Summary: Correct files / Incorrect files
+.IP \(bu 2
+Error type counts
+.IP \(bu 2
+Detailed listing per file (when \-a or when filtered by type) with type, line, column, and message
+.RE
+.SS JSON
+Approximate schema:
+.PP
+\fB{ "ok_files": N, "error_files": M, "total_errors": T, "by_type": { TYPE: COUNT, ... }, "files": [ { "file": "path", "errors": [ { "type": "TYPE", "line": L, "col": C, "message": "..." }, ... ] } ] }\fR
+.SH STATS
+\fBok_files\fR: number of files reported OK. \fBerror_files\fR: files with Error!. \fBby_type\fR: aggregated counts per error type. \fBtotal_errors\fR: total errors after filters.
+.SH CONFIG
+Loaded if present:
+.RS
+.IP \(bu 2
+/etc/normelog/config
+.IP \(bu 2
+$XDG_CONFIG_HOME/normelog/config
+.RE
+These scripts can export variables like \fBNL_OUTPUT\fR or \fBNL_DEBUG\fR.
+.SH ENVIRONMENT
+.TP
+\fBNL_OUTPUT\fR
+Force output mode (text|json). Default: text.
+.TP
+\fBNL_DEBUG\fR
+Enable debug output (1 enables). Default: 0.
+.TP
+\fBXDG_CONFIG_HOME\fR
+Base directory for user configuration. Default: $HOME/.config.
+.SH EXIT STATUS
+.TP
+0
+Successful execution (even if no errors were found).
+.TP
+1
+Generic execution or parsing error.
+.TP
+127
+\fBnorminette\fR not found on PATH.
+.SH COMPLETIONS
+Provided files: \fBshare/completion/normelog.bash\fR and \fBshare/completion/_normelog.zsh\fR. \fBmake install\fR will attempt to install them when permissions allow.
+.SH PLUGINS
+Drop scripts into \fBplugins.d/\fR to extend behavior (future plugin loader will source them). Example stub: \fBplugins.d/sample-plugin.sh\fR.
+.SH UPDATE
+\fBlib/update_check.sh\fR and \fBlib/update_apply.sh\fR are placeholders intended for GitHub Releases integration.
+.SH EXAMPLES
+.nf
+normelog
+normelog -a
+normelog SPACE TAB
+normelog -d src -n build FORBIDDEN
+normelog -C ../other-project -I -a
+normelog --json INVALID_HEADER LINE_TOO_LONG
+.fi
+.SH FILES
+.nf
+bin/normelog
+lib/*.sh
+share/completion/normelog.bash
+share/completion/_normelog.zsh
+share/man/normelog.1
+.fi
+.SH SEE ALSO
+norminette(1)
+.SH AUTHOR
+normelog project contributors. Reports and patches welcome.

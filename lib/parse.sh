@@ -18,4 +18,3 @@ nl_parse_output() {
     print "ERR", type, line, col, msg;
   }'
 }
-

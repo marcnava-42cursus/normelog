@@ -21,11 +21,14 @@ nl_format_json() {
       m=split(rec, R, "\n"); curf=""; firstf=1; firste=1
       for (i=1;i<=m;i++) {
         if (R[i] ~ /^FILE /) {
-          if (curf!="") { printf "]}"; firstf=0; firste=1 }
+          if (curf!="") printf "]}";
           if (!firstf) printf ", ";
-          split(R[i], a, " "); curf=a[2]; printf "{\"file\": \"%s\", \"errors\": [", curf
+          firstf=0; firste=1;
+          split(R[i], a, " "); curf=a[2];
+          printf "{\"file\": \"%s\", \"errors\": [", curf
         } else if (R[i] ~ /^ERR /) {
-          if (!firste) printf ", "; firste=0;
+          if (!firste) printf ", ";
+          firste=0;
           split(R[i], a, " ");
           printf "{\"type\":\"%s\",\"line\":%d,\"col\":%d,\"message\":\"", a[2], a[3], a[4];
           msg=index(R[i], a[5]);
@@ -34,8 +37,6 @@ nl_format_json() {
         }
       }
       if (curf!="") printf "]}";
-      print "]}"
-      print "}"
+      printf "]}\n"
     }'
 }
-
