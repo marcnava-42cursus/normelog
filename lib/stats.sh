@@ -10,4 +10,3 @@ nl_compute_stats() {
       print "TOTAL", total+0
     }'
 }
-

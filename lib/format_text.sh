@@ -15,4 +15,3 @@ nl_format_text() {
     /^ERR /{printf "%s\n    %s (line: %3s, col: %3s): %s\n", file, $2, $3, $4, substr($0, index($0,$5))}
   '
 }
-
