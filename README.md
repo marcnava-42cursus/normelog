@@ -1,6 +1,6 @@
 # normelog
 
-[![Version](https://img.shields.io/badge/version-1.0.10-blue.svg)](https://github.com/yourusername/normelog/releases)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/yourusername/normelog/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A powerful, portable bash-based analyzer and filter for `norminette` with intelligent filtering, statistics tracking, and multiple output formats. Designed for 42 School students working with C projects.
