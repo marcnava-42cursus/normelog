@@ -1,4 +1,4 @@
-.TH NORMELOG 1 "October 2025" "0.2.0" "User Commands"
+.TH NORMELOG 1 "octubre 2025" "0.3.0" "User Commands"
 .SH NAME
 normelog \- Analyzer and filter for norminette with statistics and text/JSON output
 .SH SYNOPSIS
@@ -53,6 +53,12 @@ Emit JSON output.
 .TP
 .B \-\-debug
 Print debug messages to stderr.
+.TP
+.B \-\-update
+Check for and install the latest version from GitHub releases. Requires curl and appropriate permissions to install.
+.TP
+.B \-\-no\-update\-check
+Disable automatic update check. By default, normelog checks for updates once per day and notifies if a new version is available.
 .PP
 Error type arguments:
 .RS
@@ -111,6 +117,9 @@ Enable debug output (1 enables). Default: 0.
 .TP
 \fBXDG_CONFIG_HOME\fR
 Base directory for user configuration. Default: $HOME/.config.
+.TP
+\fBNL_AUTO_UPDATE_CHECK\fR
+Enable or disable automatic update checks (1 enables, 0 disables). Default: 1.
 .SH EXIT STATUS
 .TP
 0
@@ -124,9 +133,29 @@ Generic execution or parsing error.
 .SH COMPLETIONS
 Provided files: \fBshare/completion/normelog.bash\fR and \fBshare/completion/_normelog.zsh\fR. \fBmake install\fR will attempt to install them when permissions allow.
 .SH PLUGINS
-Drop scripts into \fBplugins.d/\fR to extend behavior (future plugin loader will source them). Example stub: \fBplugins.d/sample-plugin.sh\fR.
-.SH UPDATE
-\fBlib/update_check.sh\fR and \fBlib/update_apply.sh\fR are placeholders intended for GitHub Releases integration.
+Drop .sh scripts into \fBplugins.d/\fR to extend normelog behavior. Plugins are loaded in alphabetical order at startup.
+.PP
+Available plugin hooks:
+.RS
+.IP \(bu 2
+\fBnl_hook_pre_norminette()\fR \- Called before norminette execution
+.IP \(bu 2
+\fBnl_hook_post_parse()\fR \- Called after parsing, can modify records
+.IP \(bu 2
+\fBnl_hook_post_stats()\fR \- Called after statistics computation
+.IP \(bu 2
+\fBnl_hook_pre_format()\fR \- Called before formatting output
+.RE
+.PP
+Example plugin:
+.nf
+#!/usr/bin/env bash
+nl_hook_pre_norminette() {
+  echo "Running custom pre-checks..."
+}
+.fi
+.SH UPDATE MECHANISM
+normelog includes automatic update checking via GitHub Releases. By default, it checks once per 24 hours and notifies when a new version is available. Use \fB--update\fR to manually trigger an update, or \fB--no-update-check\fR to disable the check for a single run. Set \fBNL_AUTO_UPDATE_CHECK=0\fR in your environment or config to permanently disable automatic checks.
 .SH EXAMPLES
 .nf
 normelog

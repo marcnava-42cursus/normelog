@@ -1,6 +1,6 @@
 # normelog
 
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/yourusername/normelog/releases)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](https://github.com/marcnava-42cursus/normelog/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A powerful, portable bash-based analyzer and filter for `norminette` with intelligent filtering, statistics tracking, and multiple output formats. Designed for 42 School students working with C projects.
@@ -40,7 +40,9 @@ A powerful, portable bash-based analyzer and filter for `norminette` with intell
 - **Shell Completions**: Bash and Zsh completion support out of the box
 - **Portable**: Pure bash implementation, works on any POSIX-compliant system
 - **Configurable**: System-wide and user-specific configuration files
-- **Plugin System**: Extensible architecture for custom plugins
+- **Plugin System**: Extensible architecture with hook-based plugins
+- **Auto-Update**: Automatic update checking and one-command updates from GitHub releases
+- **Testing**: Comprehensive BATS test suite for reliability
 
 ## Requirements
 
@@ -158,6 +160,13 @@ When run without arguments, `normelog`:
 | Flag | Description |
 |------|-------------|
 | `--json` | Output results in JSON format |
+
+#### Update Options
+
+| Flag | Description |
+|------|-------------|
+| `--update` | Check for and install the latest version from GitHub |
+| `--no-update-check` | Disable automatic update check for this run |
 
 ### Error Type Filtering
 
@@ -455,6 +464,7 @@ NL_SHOW_ALL_DETAILS=1
 |----------|--------|-------------|
 | `NL_OUTPUT` | `text`, `json` | Force output format |
 | `NL_DEBUG` | `0`, `1` | Enable debug messages |
+| `NL_AUTO_UPDATE_CHECK` | `0`, `1` | Enable automatic update checking (default: 1) |
 | `XDG_CONFIG_HOME` | path | Base directory for user config |
 
 ### Precedence
@@ -580,6 +590,92 @@ CRITICAL_TYPES=(
 normelog "${CRITICAL_TYPES[@]}" --json | \
   jq 'select(.total_errors > 0)'
 ```
+
+### Plugin System
+
+normelog supports a hook-based plugin system that allows you to extend its functionality. Plugins are simple bash scripts placed in the `plugins.d/` directory.
+
+#### Available Hooks
+
+| Hook | When Called | Use Case |
+|------|-------------|----------|
+| `nl_hook_pre_norminette()` | Before running norminette | Custom pre-checks, environment setup |
+| `nl_hook_post_parse()` | After parsing norminette output | Modify or enrich error records |
+| `nl_hook_post_stats()` | After computing statistics | Custom metrics, logging |
+| `nl_hook_pre_format()` | Before formatting output | Final data transformations |
+
+#### Creating a Plugin
+
+Create a file in `plugins.d/` (e.g., `plugins.d/notify.sh`):
+
+```bash
+#!/usr/bin/env bash
+# Example plugin: desktop notification on errors
+
+nl_hook_post_stats() {
+  # Access stats through normelog's internal variables
+  # This is a simplified example - actual implementation may vary
+  if command -v notify-send >/dev/null 2>&1; then
+    # Send desktop notification if errors are found
+    notify-send "normelog" "Analysis complete" -i dialog-information
+  fi
+}
+```
+
+Plugin best practices:
+- Keep plugins lightweight and fast
+- Handle missing dependencies gracefully
+- Use `nl_log_debug` for debugging output
+- Don't modify global state unless necessary
+- Test your plugins independently
+
+### Auto-Update System
+
+normelog includes automatic update checking via GitHub Releases.
+
+#### Automatic Checks
+
+By default, normelog checks for updates once every 24 hours and notifies you if a new version is available:
+
+```bash
+$ normelog
+# ... normal output ...
+New version available: v0.3.0 (current: v0.2.0)
+Run 'normelog --update' to upgrade
+```
+
+#### Manual Update
+
+To check for and install updates immediately:
+
+```bash
+# Check and install latest version
+sudo normelog --update
+
+# Or with custom prefix
+PREFIX=$HOME/.local normelog --update
+```
+
+#### Disabling Update Checks
+
+If you prefer not to receive update notifications:
+
+```bash
+# Disable for single run
+normelog --no-update-check
+
+# Disable permanently via environment
+export NL_AUTO_UPDATE_CHECK=0
+
+# Or in config file (~/.config/normelog/config)
+NL_AUTO_UPDATE_CHECK=0
+```
+
+#### Update Requirements
+
+- `curl` command available in PATH
+- Network access to GitHub
+- Write permissions to installation directory (for `--update`)
 
 ## Examples
 
@@ -715,7 +811,10 @@ make lint
 
 # This runs shellcheck and shfmt on all shell files
 
-# Generate man page from inline docs
+# Run test suite
+make test
+
+# Generate/update man page version
 make man
 
 # Run normelog locally without installing
@@ -743,10 +842,75 @@ make man
 
 ### Testing
 
-Currently, testing is manual. Planned: BATS (Bash Automated Testing System)
+normelog includes a comprehensive BATS (Bash Automated Testing System) test suite.
+
+#### Running Tests
 
 ```bash
-# Run normelog on test fixtures
+# Run all tests
+make test
+
+# Or run directly
+./tests/run_tests.sh
+
+# Run specific test files
+bats tests/unit/test_parse.bats
+bats tests/integration/test_cli.bats
+```
+
+#### Test Structure
+
+```
+tests/
+├── fixtures/                    # Test input files
+│   ├── sample-ok.c
+│   ├── sample-errors.c
+│   └── norminette-output-samples/
+├── unit/                        # Unit tests for individual modules
+│   ├── test_parse.bats
+│   ├── test_filter.bats
+│   └── test_stats.bats
+└── integration/                 # End-to-end integration tests
+    └── test_cli.bats
+```
+
+#### Installing BATS
+
+```bash
+# Debian/Ubuntu
+sudo apt-get install bats
+
+# macOS
+brew install bats-core
+
+# From source
+git clone https://github.com/bats-core/bats-core.git
+cd bats-core
+sudo ./install.sh /usr/local
+```
+
+#### Writing Tests
+
+Example unit test:
+
+```bash
+# tests/unit/test_mymodule.bats
+#!/usr/bin/env bats
+
+setup() {
+  export BASE_DIR="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
+  source "$BASE_DIR/lib/mymodule.sh"
+}
+
+@test "mymodule does something" {
+  result=$(my_function input)
+  [ "$result" = "expected output" ]
+}
+```
+
+### Manual Testing
+
+You can also test normelog manually on fixtures:
 ./bin/normelog -C tests/fixtures/sample-project -a
 
 # Test specific modules (source and call functions)

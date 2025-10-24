@@ -1,0 +1,4 @@
+sample-errors.c
+Error: SPACE_TAB    (line:   6, col:   5):	space before tab
+Error: CONSECUTIVE_NEWLINES	(line:  11, col:   1):	consecutive newlines
+sample-errors.c: KO!

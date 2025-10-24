@@ -184,3 +184,147 @@ This phase focuses on fixing all critical errors from ERRORS.md and implementing
 
 ---
 
+## Phase 2 (v0.3.0) - Core Missing Features
+
+This phase implements the essential missing features documented in TODO.md Phase 2.
+
+---
+
+### ✅ Error #11 - Unused NL_SHOW_ALL_DETAILS Variable
+
+**Fixed**: 2025-10-24 (Phase 1)
+
+**File**: `lib/format_text.sh:13-16`
+
+**Issue**: The `NL_SHOW_ALL_DETAILS` variable was set but never used.
+
+**Solution**: Implemented the feature to control detailed error output based on this variable (fixed in Error #2).
+
+**Status**: Already fixed in Phase 1
+
+---
+
+### ✅ Error #12 - Plugin System Not Implemented
+
+**Fixed**: 2025-10-24 (Phase 2)
+
+**File**: `lib/update_check.sh`, `lib/update_apply.sh`, `plugins.d/`
+
+**Issue**: README and man page mentioned a plugin system, but it was just placeholder code with empty functions.
+
+**Solution**: Fully implemented hook-based plugin system with automatic discovery and loading.
+
+**Changes**:
+- lib/plugins.sh: Created new module with plugin loader
+- plugins.d/.gitkeep: Created plugin directory with comprehensive documentation
+- bin/normelog: Integrated plugin loading and hook calls throughout pipeline
+- Added 4 hook points:
+  - `nl_hook_pre_norminette()` - Before norminette execution
+  - `nl_hook_post_parse()` - After parsing
+  - `nl_hook_post_stats()` - After statistics
+  - `nl_hook_pre_format()` - Before formatting
+
+**Features**:
+- Automatic discovery of `.sh` files in `plugins.d/`
+- Alphabetical loading order
+- Error handling for broken plugins
+- Comprehensive logging
+
+---
+
+### ✅ Error #14 - JSON Escaping Bug
+
+**Fixed**: 2025-10-24 (Phase 1)
+
+**File**: `lib/format_json.sh:35`
+
+**Issue**: JSON escaping was applied to entire line instead of just the message field.
+
+**Solution**: Fixed in Error #3 - JSON escaping now only applies to message text.
+
+**Status**: Already fixed in Phase 1
+
+---
+
+### ✅ Error #17 - Version Synchronization Between Binary and Man Page
+
+**Fixed**: 2025-10-24 (Phase 2)
+
+**File**: `lib/version.sh`, `share/man/normelog.1:1`, `scripts/gen-man.sh`
+
+**Issue**: Version was hardcoded in two places (`lib/version.sh` and man page) and could get out of sync.
+
+**Solution**: Implemented automatic version synchronization script.
+
+**Changes**:
+- scripts/gen-man.sh: Enhanced to automatically update man page version and date
+- Added version extraction from man page
+- Added comparison with current version
+- Automatic update when versions don't match
+- Added groff syntax validation
+
+**Usage**: Run `make man` to synchronize version and date
+
+---
+
+### ✅ Update System Implementation
+
+**Fixed**: 2025-10-24 (Phase 2)
+
+**Files**: `lib/update_check.sh`, `lib/update_apply.sh`, `lib/flags.sh`, `bin/normelog`
+
+**Issue**: Update check and apply functions were empty placeholders.
+
+**Solution**: Fully implemented automatic update checking and one-command updates via GitHub Releases.
+
+**Update Check Features**:
+- Fetches latest version from GitHub Releases API
+- Caches check results for 24 hours
+- 5-second timeout for network requests
+- Graceful handling of network failures
+- Respects `NL_AUTO_UPDATE_CHECK` environment variable
+- Can be disabled with `--no-update-check` flag
+
+**Update Apply Features**:
+- Downloads latest release tarball from GitHub
+- Extracts and runs `make install` automatically
+- Supports custom installation prefix
+- Verifies version before/after update
+- Automatic cleanup of temporary files
+- Clear error messages and logging
+
+**Changes**:
+- lib/update_check.sh: Implemented update checking with caching
+- lib/update_apply.sh: Implemented download and installation
+- lib/flags.sh: Added `--update` and `--no-update-check` flags
+- bin/normelog: Integrated update check at end of execution
+
+---
+
+### ✅ BATS Test Suite Implementation
+
+**Fixed**: 2025-10-24 (Phase 2)
+
+**Files**: `tests/`, `Makefile`
+
+**Issue**: No automated testing system existed (only manual testing mentioned).
+
+**Solution**: Implemented comprehensive BATS (Bash Automated Testing System) test suite.
+
+**Changes**:
+- tests/run_tests.sh: Created colored test runner script
+- tests/unit/test_parse.bats: Unit tests for parse module
+- tests/unit/test_filter.bats: Unit tests for filter module
+- tests/unit/test_stats.bats: Unit tests for stats module
+- tests/integration/test_cli.bats: Integration tests for CLI
+- tests/fixtures/: Created test fixtures and sample data
+- Makefile: Updated `test` target to run test suite
+
+**Test Coverage**:
+- Parser module: OK status, error extraction, multiple errors
+- Filter module: Include/exclude patterns, preservation of FILE records
+- Stats module: Error counting, type aggregation, file counting
+- CLI: All command-line flags and options
+
+---
+

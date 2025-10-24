@@ -11,7 +11,7 @@ lint:
 	./scripts/lint.sh
 
 test:
-	@echo "No tests yet (add BATS)"
+	./tests/run_tests.sh
 
 man:
 	./scripts/gen-man.sh
