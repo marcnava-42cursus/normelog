@@ -1,0 +1,74 @@
+# normelog configuration file example
+# Place this file in one of the following locations:
+# - /etc/normelog/config (system-wide)
+# - $XDG_CONFIG_HOME/normelog/config (user-specific, typically ~/.config/normelog/config)
+#
+# All variables are optional and have sensible defaults.
+# Uncomment and modify as needed.
+
+# Output format (text|json)
+# Default: text
+#NL_OUTPUT=text
+
+# Enable debug mode (0|1)
+# Shows detailed logging of the processing pipeline
+# Default: 0
+#NL_DEBUG=0
+
+# Show all error details by default (0|1)
+# When set to 1, behaves as if -a flag was passed
+# Default: 0
+#NL_SHOW_ALL_DETAILS=0
+
+# Use gitignore by default (0|1)
+# When set to 1, norminette will respect .gitignore files
+# Default: 1
+#NL_USE_GITIGNORE=1
+
+# Directories to always exclude (space-separated list)
+# These directories will be excluded in addition to any -n flags
+# Default: none
+#NL_EXCLUDE_DIRS=(build .cache obj bin .git)
+
+# Error types to always exclude (space-separated list)
+# These error types will be excluded in addition to any -TYPE flags
+# Matching is case-insensitive and uses substring matching
+# Default: none
+#NL_EXCLUDE_TYPES=(SPACE_EMPTY_LINE CONSECUTIVE_NEWLINES)
+
+# Error types to always include (space-separated list)
+# When set, only these error types will be shown (unless excluded)
+# Matching is case-insensitive and uses substring matching
+# Default: none (show all types)
+#NL_INCLUDE_TYPES=()
+
+# Color output (0|1)
+# When not set, automatically detected based on TTY
+# Set to 0 to disable colors, 1 to force colors
+# Default: auto-detected
+#NL_COLOR=1
+
+# Automatic update check (0|1)
+# When enabled, normelog checks for updates periodically
+# Note: Update mechanism not yet implemented
+# Default: 1
+#NL_AUTO_UPDATE_CHECK=1
+
+# Examples of common configurations:
+
+## Strict mode - show all details and all error types
+#NL_SHOW_ALL_DETAILS=1
+#NL_EXCLUDE_TYPES=()
+
+## Development mode - hide minor formatting errors
+#NL_EXCLUDE_TYPES=(SPACE_BEFORE_TAB SPACE_REPLACE_TAB TAB_REPLACE_SPACES NEWLINE_EOF)
+#NL_SHOW_ALL_DETAILS=0
+
+## CI mode - always output JSON, no colors, show all details
+#NL_OUTPUT=json
+#NL_COLOR=0
+#NL_SHOW_ALL_DETAILS=1
+
+## Focus on critical errors only
+#NL_INCLUDE_TYPES=(FORBIDDEN_CS TOO_MANY_FUNCS FORBIDDEN_CHAR_NAME)
+#NL_SHOW_ALL_DETAILS=1

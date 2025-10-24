@@ -7,9 +7,9 @@ nl_format_json() {
 		ok=err=0; total=0
 		n=split(st, S, "\n");
 		for (i=1;i<=n;i++) {
-			if (S[i] ~ /^STATS OK/) ok=$3
-			else if (S[i] ~ /^STATS ERR/) err=$3
-			else if (S[i] ~ /^TOTAL/) total=$2
+			if (S[i] ~ /^STATS OK/) { split(S[i], a, " "); ok=a[3] }
+			else if (S[i] ~ /^STATS ERR/) { split(S[i], a, " "); err=a[3] }
+			else if (S[i] ~ /^TOTAL/) { split(S[i], a, " "); total=a[2] }
 			else if (S[i] ~ /^TYPE /) {
 			split(S[i], a, " "); types[a[2]]=a[3]
 			}
@@ -32,8 +32,9 @@ nl_format_json() {
 			split(R[i], a, " ");
 			printf "{\"type\":\"%s\",\"line\":%d,\"col\":%d,\"message\":\"", a[2], a[3], a[4];
 			msg=index(R[i], a[5]);
-			gsub(/"/, "\\\"", R[i]);
-			printf "%s\"}", substr(R[i], msg)
+			msg_text = substr(R[i], msg);
+			gsub(/"/, "\\\"", msg_text);
+			printf "%s\"}", msg_text
 			}
 		}
 		if (curf!="") printf "]}";
