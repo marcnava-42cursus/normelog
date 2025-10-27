@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.1] - 2025-10-27
+
+### 🔄 Patch Release - Auto-Update System
+
+This is a patch release that improves the auto-update functionality introduced in v0.4.0.
+
+### ✨ Highlights
+
+The auto-update system now works seamlessly:
+
+- **Automatic Version Checks**: normelog automatically checks for new versions on GitHub releases once per day
+- **Non-Intrusive**: Update checks are cached for 24 hours to avoid API rate limits
+- **Easy Updates**: Simply run `normelog --update` to download and install the latest version
+- **Smart Notifications**: Only notifies when a newer version is actually available
+
+### 🔧 How It Works
+
+1. **Background Checks**: Each time you run normelog, it checks (once per 24h) if a newer version exists
+2. **Clear Notifications**: If an update is available, you'll see a message like:
+   ```
+   New version available: v0.4.1 (current: v0.4.0)
+   Run 'normelog --update' to upgrade
+   ```
+3. **One-Command Update**: Run `normelog --update` to download and install automatically
+4. **Configurable**: Disable auto-checks with `--no-update-check` flag or `NL_AUTO_UPDATE_CHECK=0` in config
+
+### 📚 Documentation
+
+- Updated man page with `--update` and `--no-update-check` flags
+- Help text includes update-related options
+- Clear error messages if update requirements (curl, permissions) are missing
+
+### 🎯 Technical Details
+
+- **Version Comparison**: Uses GitHub API to fetch latest release tag
+- **Cache System**: Stores last check timestamp in `$XDG_CACHE_HOME/normelog/`
+- **Requirements**: Requires `curl` for updates
+- **Installation**: Uses standard `make install` for reliable updates
+- **Error Handling**: Graceful fallback if network unavailable or API unreachable
+
+---
+
 ## [0.4.0] - 2025-10-27
 
 ### 🎉 Phase 3 Release - Usability Enhancements
