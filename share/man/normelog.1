@@ -1,4 +1,4 @@
-.TH NORMELOG 1 "octubre 2025" "0.3.0" "User Commands"
+.TH NORMELOG 1 "octubre 2025" "0.4.0" "User Commands"
 .SH NAME
 normelog \- Analyzer and filter for norminette with statistics and text/JSON output
 .SH SYNOPSIS
@@ -59,6 +59,24 @@ Check for and install the latest version from GitHub releases. Requires curl and
 .TP
 .B \-\-no\-update\-check
 Disable automatic update check. By default, normelog checks for updates once per day and notifies if a new version is available.
+.TP
+.B \-\-staged
+Check only staged files (git). Useful for pre-commit hooks. Requires a git repository.
+.TP
+.B \-\-since \fIREF\fR
+Check files changed since commit or branch \fIREF\fR. Compares current state with the specified reference. Requires a git repository.
+.TP
+.B \-\-branch \fIREF\fR
+Check files changed in current branch versus base branch \fIREF\fR. Defaults to 'main' if not specified. Requires a git repository.
+.TP
+.B \-\-watch
+Watch mode: continuously monitor files and re-run on changes. Requires either inotifywait (Linux) or fswatch (macOS). Press Ctrl+C to stop.
+.TP
+.B \-\-severity \fILEVEL\fR
+Filter errors by minimum severity level. Valid levels: CRITICAL, WARNING, INFO. Default: INFO (shows all errors).
+.TP
+.B \-\-max\-errors \fIN\fR
+Exit with error code 1 if total error count exceeds \fIN\fR. Useful for CI/CD pipelines with strict quality gates.
 .PP
 Error type arguments:
 .RS
@@ -120,13 +138,48 @@ Base directory for user configuration. Default: $HOME/.config.
 .TP
 \fBNL_AUTO_UPDATE_CHECK\fR
 Enable or disable automatic update checks (1 enables, 0 disables). Default: 1.
+.SH GIT INTEGRATION
+.B normelog
+supports incremental checking via git integration, useful for pre-commit hooks and CI/CD pipelines:
+.RS
+.IP \(bu 2
+\fB\-\-staged\fR checks only files staged for commit
+.IP \(bu 2
+\fB\-\-since HEAD~1\fR checks files changed in the last commit
+.IP \(bu 2
+\fB\-\-branch main\fR checks files changed in current branch vs main
+.RE
+.PP
+These options filter C and H files only and require a git repository. Helpful error messages suggest alternatives if git is not available.
+.SH WATCH MODE
+Use \fB\-\-watch\fR to continuously monitor files and re-run normelog on changes. Great for development workflow. Requires:
+.RS
+.IP \(bu 2
+\fBinotifywait\fR on Linux (install with: apt-get install inotify-tools)
+.IP \(bu 2
+\fBfswatch\fR on macOS (install with: brew install fswatch)
+.RE
+.PP
+Press Ctrl+C to stop watching. The tool clears the screen and shows a timestamp on each run.
+.SH SEVERITY LEVELS
+Errors are classified into three severity levels:
+.RS
+.IP \(bu 2
+\fBCRITICAL\fR: Forbidden elements, compilation blockers (FORBIDDEN_*, TOO_MANY_FUNCS, etc.)
+.IP \(bu 2
+\fBWARNING\fR: Code quality and style violations (SPACE_BEFORE_TAB, LINE_TOO_LONG, etc.)
+.IP \(bu 2
+\fBINFO\fR: Minor formatting issues (EMPTY_LINE_*, TRAILING_WHITESPACE, etc.)
+.RE
+.PP
+Use \fB\-\-severity CRITICAL\fR to show only critical errors, or \fB\-\-severity WARNING\fR to exclude info-level errors. The text output includes a severity breakdown by default.
 .SH EXIT STATUS
 .TP
 0
-Successful execution (even if no errors were found).
+Successful execution (even if errors were found, unless \-\-max\-errors is exceeded).
 .TP
 1
-Generic execution or parsing error.
+Generic execution or parsing error, or \-\-max\-errors threshold exceeded.
 .TP
 127
 \fBnorminette\fR not found on PATH.

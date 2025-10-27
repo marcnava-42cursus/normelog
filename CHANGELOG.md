@@ -7,6 +7,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2025-10-27
+
+### 🎉 Phase 3 Release - Usability Enhancements
+
+This release implements all Phase 3 features from TODO.md, focusing on usability improvements including git integration, watch mode, and error severity levels.
+
+### ✨ Added
+
+#### Git Integration (Incremental Mode)
+- **Incremental Checking**: Check only files that have changed, significantly reducing scan time for large projects
+  - `--staged` - Check only staged files, perfect for pre-commit hooks
+  - `--since <ref>` - Check files changed since a specific commit or branch
+  - `--branch <ref>` - Check files changed in current branch vs base branch (defaults to 'main')
+- **Smart File Filtering**: Automatically filters for .c and .h files only
+- **Helpful Error Messages**: Clear guidance when git repository is not available
+- **Automatic Fallback**: Falls back to 'master' if 'main' branch doesn't exist
+
+#### Watch Mode
+- **Continuous Monitoring**: Automatically re-run normelog when files change
+  - `--watch` flag enables watch mode
+- **Cross-Platform Support**:
+  - Uses `inotifywait` on Linux (inotify-tools package)
+  - Uses `fswatch` on macOS (via Homebrew)
+- **Smart Debouncing**: Waits for rapid changes to settle before re-running
+- **Clean Output**: Clears screen and shows timestamp on each run
+- **Easy Exit**: Press Ctrl+C to stop watching
+
+#### Error Severity Levels
+- **Three-Tier Classification**: Errors classified into CRITICAL, WARNING, and INFO levels
+  - **CRITICAL**: Forbidden elements, compilation blockers (FORBIDDEN_*, TOO_MANY_FUNCS, etc.)
+  - **WARNING**: Code quality and style violations (SPACE_BEFORE_TAB, LINE_TOO_LONG, etc.)
+  - **INFO**: Minor formatting issues (EMPTY_LINE_*, TRAILING_WHITESPACE, etc.)
+- **Severity Filtering**: `--severity <level>` filters by minimum severity level
+- **Error Thresholds**: `--max-errors <n>` exits with error if threshold exceeded
+- **Visual Breakdown**: Text output shows color-coded severity counts
+- **CI/CD Integration**: Perfect for gradual quality enforcement in pipelines
+
+### 🔧 Changed
+
+- **Exit Status**: Now exits with code 1 when `--max-errors` threshold is exceeded
+- **Text Output**: Added severity breakdown section showing critical/warning/info counts
+- **Error Messages**: Improved error messages throughout, especially for git-related errors
+
+### 📚 Documentation
+
+- **Man Page**: Updated with comprehensive documentation for all new features
+  - New sections: GIT INTEGRATION, WATCH MODE, SEVERITY LEVELS
+  - Detailed flag descriptions with examples
+  - Updated EXIT STATUS section
+- **Help Text**: Updated `--help` output with all new flags
+- **CHANGELOG.md**: This comprehensive changelog entry
+
+### 🎯 Impact Summary
+
+**Phase 3 Completion:**
+- ✅ Git integration (incremental mode) - Fully implemented with 3 modes
+- ✅ Watch mode - Cross-platform with automatic tool detection
+- ✅ Error severity levels - Three-tier system with filtering
+- ✅ Better error messages - Contextual help and suggestions
+
+**New Capabilities:**
+- Check only changed files (massive speed improvement for large projects)
+- Real-time feedback during development with watch mode
+- Flexible quality enforcement with severity levels and thresholds
+- Better CI/CD integration with granular control
+
+**Use Cases Enabled:**
+- Pre-commit hooks with `--staged`
+- PR validation with `--branch main`
+- Development workflow with `--watch`
+- Gradual quality improvement with `--severity` and `--max-errors`
+- Faster feedback loops for large codebases
+
+---
+
 ## [0.3.0] - 2025-10-24
 
 ### 🎉 Phase 2 Release - Core Missing Features
@@ -218,6 +293,7 @@ This release focuses on fixing all critical and medium-priority bugs identified 
 
 ---
 
+[0.4.0]: https://github.com/marcnava-42cursus/normelog/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/marcnava-42cursus/normelog/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/marcnava-42cursus/normelog/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/marcnava-42cursus/normelog/releases/tag/v0.1.0

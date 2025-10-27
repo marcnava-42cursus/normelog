@@ -1,6 +1,6 @@
 # normelog
 
-[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](https://github.com/marcnava-42cursus/normelog/releases)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/marcnava-42cursus/normelog/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A powerful, portable bash-based analyzer and filter for `norminette` with intelligent filtering, statistics tracking, and multiple output formats. Designed for 42 School students working with C projects.
@@ -36,6 +36,10 @@ A powerful, portable bash-based analyzer and filter for `norminette` with intell
 - **Multiple Output Formats**: Human-readable text or machine-parsable JSON
 - **Directory Management**: Include or exclude specific directories from analysis
 - **Gitignore Support**: Automatically respects `.gitignore` files (configurable)
+- **Git Integration**: Check only changed files with `--staged`, `--since`, or `--branch` flags
+- **Watch Mode**: Continuously monitor files and re-run on changes (perfect for development)
+- **Severity Levels**: Classify and filter errors by CRITICAL, WARNING, or INFO severity
+- **Error Thresholds**: Set maximum error limits for CI/CD pipelines with `--max-errors`
 - **Modular Architecture**: Clean, maintainable bash codebase with separated concerns
 - **Shell Completions**: Bash and Zsh completion support out of the box
 - **Portable**: Pure bash implementation, works on any POSIX-compliant system
@@ -167,6 +171,27 @@ When run without arguments, `normelog`:
 |------|-------------|
 | `--update` | Check for and install the latest version from GitHub |
 | `--no-update-check` | Disable automatic update check for this run |
+
+#### Git Integration Options
+
+| Flag | Description |
+|------|-------------|
+| `--staged` | Check only staged files (perfect for pre-commit hooks) |
+| `--since <ref>` | Check files changed since commit or branch |
+| `--branch <ref>` | Check files changed in current branch vs base (defaults to 'main') |
+
+#### Watch Mode
+
+| Flag | Description |
+|------|-------------|
+| `--watch` | Continuously monitor files and re-run on changes (requires `inotifywait` or `fswatch`) |
+
+#### Severity and Quality Options
+
+| Flag | Description |
+|------|-------------|
+| `--severity <level>` | Filter by minimum severity: CRITICAL, WARNING, or INFO (default: INFO) |
+| `--max-errors <n>` | Exit with error if total error count exceeds n (useful for CI/CD) |
 
 ### Error Type Filtering
 
@@ -709,6 +734,54 @@ normelog -TOO_MANY_FUNCS -TOO_MANY_VARS
 
 # Complex filter: show TOO_* errors but exclude TOO_MANY_VARS_FUNC
 normelog TOO -TOO_MANY_VARS_FUNC
+```
+
+### Git Integration Examples
+
+```bash
+# Check only staged files (pre-commit hook)
+normelog --staged
+
+# Check files changed in last commit
+normelog --since HEAD~1
+
+# Check files changed since branch diverged from main
+normelog --branch main
+
+# Combine with severity filtering for CI
+normelog --branch main --severity CRITICAL --max-errors 0
+```
+
+### Watch Mode Examples
+
+```bash
+# Watch current directory and re-run on changes
+normelog --watch
+
+# Watch with specific filters
+normelog --watch FORBIDDEN
+
+# Watch with severity filtering
+normelog --watch --severity WARNING
+```
+
+### Severity and Quality Gate Examples
+
+```bash
+# Show only critical errors
+normelog --severity CRITICAL
+
+# Show warnings and critical errors (exclude info)
+normelog --severity WARNING
+
+# Fail CI build if any critical errors found
+normelog --severity CRITICAL --max-errors 0
+
+# Allow up to 10 warnings in CI
+normelog --severity WARNING --max-errors 10
+
+# Complex CI setup: check changed files with quality gate
+normelog --branch main --severity WARNING --max-errors 5
 ```
 
 ### JSON Output Examples
