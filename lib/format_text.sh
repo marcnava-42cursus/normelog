@@ -1,11 +1,24 @@
 #!/usr/bin/env bash
 nl_format_text() {
-	local records="$1" stats="$2"
+	local records="$1" stats="$2" severity_stats="${3:-}"
 	echo "$stats" | awk '
 	/^STATS OK/ {ok=$3}
 	/^STATS ERR/ {er=$3}
 	END { printf "\033[32mCorrect files: %d\033[0m\n\033[31mIncorrect files: %d\033[0m\n\n", ok, er }
 	'
+
+	# Show severity breakdown if available
+	if [[ -n "$severity_stats" ]]; then
+		echo "Error severity:"
+		echo "--------------------"
+		echo "$severity_stats" | awk '
+		/^SEVERITY_CRITICAL/ { printf "\033[31mCritical: %d\033[0m\n", $2 }
+		/^SEVERITY_WARNING/ { printf "\033[33mWarning:  %d\033[0m\n", $2 }
+		/^SEVERITY_INFO/ { printf "\033[36mInfo:     %d\033[0m\n", $2 }
+		'
+		echo ""
+	fi
+
 	echo "Error type count:"
 	echo "--------------------"
 	echo "$stats" | awk '/^TYPE /{ printf "%-25s: %d\n", $2, $3 }'

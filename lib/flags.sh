@@ -10,6 +10,13 @@ NL_EXCLUDE_TYPES=()
 NL_CHDIR=""
 NL_DO_UPDATE=0
 NL_NO_UPDATE_CHECK=0
+NL_GIT_STAGED=0
+NL_GIT_SINCE=""
+NL_GIT_BRANCH=""
+NL_WATCH=0
+NL_ORIGINAL_ARGS=()
+NL_MIN_SEVERITY=""
+NL_MAX_ERRORS=""
 
 nl_flags_help() {
 cat <<'HLP'
@@ -26,6 +33,12 @@ Usage: normelog [OPTIONS] [ERROR_TYPE...]
 	--debug                 Debug logs
 	--update                Check for and install updates
 	--no-update-check       Disable automatic update check
+	--staged                Check only staged files (git)
+	--since <ref>           Check files changed since commit/branch
+	--branch <ref>          Check files changed in current branch vs base
+	--watch                 Watch mode: re-run on file changes
+	--severity <level>      Minimum severity: CRITICAL, WARNING, INFO (default: INFO)
+	--max-errors <n>        Exit with error if total errors exceeds n
 	Patterns:
 	TYPE ...      include
 	-TYPE ...     exclude
@@ -80,6 +93,44 @@ nl_flags_parse() {
 				;;
 			--no-update-check)
 				NL_NO_UPDATE_CHECK=1
+				;;
+			--staged)
+				NL_GIT_STAGED=1
+				;;
+			--since)
+				if [[ -z ${2:-} ]]; then
+					echo "Error: --since requires a git reference" >&2
+					exit 1
+				fi
+				NL_GIT_SINCE="$2"
+				shift
+				;;
+			--branch)
+				if [[ -z ${2:-} ]]; then
+					echo "Error: --branch requires a branch name" >&2
+					exit 1
+				fi
+				NL_GIT_BRANCH="$2"
+				shift
+				;;
+			--watch)
+				NL_WATCH=1
+				;;
+			--severity)
+				if [[ -z ${2:-} ]]; then
+					echo "Error: --severity requires a level (CRITICAL, WARNING, INFO)" >&2
+					exit 1
+				fi
+				NL_MIN_SEVERITY="$2"
+				shift
+				;;
+			--max-errors)
+				if [[ -z ${2:-} ]]; then
+					echo "Error: --max-errors requires a number" >&2
+					exit 1
+				fi
+				NL_MAX_ERRORS="$2"
+				shift
 				;;
 			-d*)
 				if [[ ${#1} -gt 2 ]]; then

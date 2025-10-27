@@ -35,10 +35,15 @@ fi
 . "$LIB_DIR/update_check.sh"
 . "$LIB_DIR/update_apply.sh"
 . "$LIB_DIR/plugins.sh"
+. "$LIB_DIR/git.sh"
+. "$LIB_DIR/watch.sh"
+. "$LIB_DIR/severity.sh"
 
 main() {
   nl_env_init
   nl_version_init
+  # Store original args for watch mode
+  NL_ORIGINAL_ARGS=("$@")
   # parse flags first to allow --help/--version early exit
   nl_flags_parse "$@"
   # Early exits for meta flags before any other logic
@@ -47,6 +52,10 @@ main() {
   fi
   if [[ "${NL_DO_UPDATE:-0}" -eq 1 ]]; then
 	nl_update_apply
+	exit $?
+  fi
+  if [[ "${NL_WATCH:-0}" -eq 1 ]]; then
+	nl_watch_run
 	exit $?
   fi
   if [[ "${NL_SHOW_HELP:-0}" -eq 1 ]]; then
@@ -86,6 +95,28 @@ main() {
 
   # (version/help handled above)
 
+  # Handle git integration modes
+  local git_files=()
+  if [[ "${NL_GIT_STAGED:-0}" -eq 1 ]]; then
+	nl_log_debug "Getting staged files from git..."
+	mapfile -t git_files < <(nl_git_get_staged_files)
+  elif [[ -n "${NL_GIT_SINCE:-}" ]]; then
+	nl_log_debug "Getting files changed since ${NL_GIT_SINCE}..."
+	mapfile -t git_files < <(nl_git_get_changed_files "$NL_GIT_SINCE")
+  elif [[ -n "${NL_GIT_BRANCH:-}" ]]; then
+	nl_log_debug "Getting files changed in current branch vs ${NL_GIT_BRANCH}..."
+	mapfile -t git_files < <(nl_git_get_branch_files "$NL_GIT_BRANCH")
+  fi
+
+  # If git mode returned files, override NL_DIRS
+  if [[ ${#git_files[@]} -gt 0 ]]; then
+	nl_log_debug "Found ${#git_files[@]} changed files"
+	NL_DIRS=("${git_files[@]}")
+  elif [[ "${NL_GIT_STAGED:-0}" -eq 1 ]] || [[ -n "${NL_GIT_SINCE:-}" ]] || [[ -n "${NL_GIT_BRANCH:-}" ]]; then
+	nl_log_info "No changed C/H files found"
+	exit 0
+  fi
+
   # Call pre-norminette hook
   nl_hook_pre_norminette
 
@@ -119,9 +150,19 @@ main() {
   local filtered
   filtered=$(nl_filter_errors <<<"$records")
 
+  # Apply severity filtering if requested
+  if [[ -n "${NL_MIN_SEVERITY:-}" ]]; then
+	nl_log_debug "Filtering by severity level: ${NL_MIN_SEVERITY}..."
+	filtered=$(nl_severity_filter <<<"$filtered")
+  fi
+
   nl_log_debug "Computing stats..."
   local stats
   stats=$(nl_compute_stats <<<"$filtered")
+
+  # Compute severity statistics
+  local severity_stats
+  severity_stats=$(nl_severity_stats <<<"$filtered")
 
   # Call post-stats hook
   nl_hook_post_stats
@@ -132,12 +173,22 @@ main() {
   if [[ "$NL_OUTPUT" == "json" ]]; then
 	nl_format_json "$filtered" "$stats"
   else
-	nl_format_text "$filtered" "$stats"
+	nl_format_text "$filtered" "$stats" "$severity_stats"
   fi
 
   # Check for updates (unless disabled)
   if [[ "${NL_NO_UPDATE_CHECK:-0}" -eq 0 ]]; then
 	nl_update_check
+  fi
+
+  # Exit with error if max-errors threshold exceeded
+  if [[ -n "${NL_MAX_ERRORS:-}" ]]; then
+	local total_errors
+	total_errors=$(echo "$stats" | awk '/^TOTAL_ERRORS/ {print $2}')
+	if [[ $total_errors -gt ${NL_MAX_ERRORS} ]]; then
+		nl_log_error "Error threshold exceeded: $total_errors errors (max: ${NL_MAX_ERRORS})"
+		exit 1
+	fi
   fi
 }
 
