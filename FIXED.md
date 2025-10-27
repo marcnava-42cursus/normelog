@@ -328,3 +328,121 @@ This phase implements the essential missing features documented in TODO.md Phase
 
 ---
 
+## Phase 3 (v0.4.0) - Usability Enhancements
+
+This phase implements essential usability features for improved developer workflow and CI/CD integration.
+
+---
+
+### ✅ Git Integration (Incremental Mode)
+
+**Implemented**: 2025-10-27 (Phase 3)
+
+**File**: `lib/git.sh`, `bin/normelog`, `lib/flags.sh`
+
+**Description**: Added comprehensive git integration for checking only changed files, dramatically reducing scan time for large projects.
+
+**Solution**: Implemented three git modes:
+
+**Changes**:
+- lib/git.sh: Created new module with git file detection functions
+  - `nl_git_get_staged_files()` - Get files staged for commit
+  - `nl_git_get_changed_files(ref)` - Get files changed since ref
+  - `nl_git_get_branch_files(base)` - Get files in current branch vs base
+- lib/flags.sh: Added flags --staged, --since <ref>, --branch <ref>
+- bin/normelog: Integrated git file detection into pipeline
+- Improved error messages with helpful suggestions
+
+**Features**:
+- Pre-commit hook support with `--staged`
+- CI/CD integration with `--branch main`
+- Incremental checks with `--since HEAD~1`
+- Automatic fallback from 'main' to 'master'
+- Clear error messages when not in git repository
+
+---
+
+### ✅ Watch Mode
+
+**Implemented**: 2025-10-27 (Phase 3)
+
+**File**: `lib/watch.sh`, `bin/normelog`, `lib/flags.sh`
+
+**Description**: Added continuous monitoring mode that re-runs normelog when files change.
+
+**Solution**: Implemented watch mode with cross-platform support.
+
+**Changes**:
+- lib/watch.sh: Created new module for file monitoring
+  - `nl_watch_run()` - Main watch loop
+  - `nl_watch_inotify()` - Linux implementation using inotifywait
+  - `nl_watch_fswatch()` - macOS implementation using fswatch
+- lib/flags.sh: Added --watch flag
+- bin/normelog: Integrated watch mode as early exit
+- Automatic tool detection (inotifywait or fswatch)
+
+**Features**:
+- Continuous monitoring of .c and .h files
+- Cross-platform support (Linux and macOS)
+- Automatic debouncing (0.5s delay)
+- Clear screen and timestamp on each run
+- Clean exit with Ctrl+C
+
+---
+
+### ✅ Error Severity Levels
+
+**Implemented**: 2025-10-27 (Phase 3)
+
+**File**: `lib/severity.sh`, `lib/format_text.sh`, `bin/normelog`, `lib/flags.sh`
+
+**Description**: Added three-tier error classification system for better prioritization and CI/CD integration.
+
+**Solution**: Implemented severity classification with filtering and statistics.
+
+**Changes**:
+- lib/severity.sh: Created new module for severity classification
+  - Three levels: CRITICAL, WARNING, INFO
+  - `nl_severity_filter()` - Filter by minimum severity
+  - `nl_severity_stats()` - Compute severity statistics
+  - Comprehensive error type classification
+- lib/flags.sh: Added --severity <level> and --max-errors <n> flags
+- lib/format_text.sh: Added severity breakdown to output
+- bin/normelog: Integrated severity filtering and threshold checking
+
+**Features**:
+- CRITICAL: Forbidden elements, compilation blockers
+- WARNING: Code quality and style violations
+- INFO: Minor formatting issues
+- Severity filtering with `--severity CRITICAL|WARNING|INFO`
+- Quality gates with `--max-errors <n>`
+- Color-coded severity breakdown in output
+- Exit code 1 when threshold exceeded
+
+---
+
+### ✅ Improved Error Messages
+
+**Implemented**: 2025-10-27 (Phase 3)
+
+**File**: `lib/git.sh`, various
+
+**Description**: Enhanced error messages throughout the codebase with contextual help and suggestions.
+
+**Solution**: Added helpful suggestions and context to error messages.
+
+**Changes**:
+- lib/git.sh: Improved git error messages with alternatives
+  - "Not in a git repository" now includes "Run 'git init' or use without --staged"
+  - Base branch errors suggest using --branch with existing branch
+- Clear indication of which flag triggered the error
+- Helpful next steps in error messages
+
+**Features**:
+- Contextual help in error messages
+- Suggestions for alternative approaches
+- Clear indication of requirements (git, inotifywait, etc.)
+- Better user guidance for troubleshooting
+
+---
+
