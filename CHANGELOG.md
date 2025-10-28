@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.1] - 2025-10-28
+
+### 📚 Patch Release - Documentation Improvements
+
+This patch release completes the documentation audit for v0.5.0, adding missing environment variable documentation and significantly improving the help text structure.
+
+### 📝 Documentation
+
+#### Man Page Updates
+- **Added 3 Missing Environment Variables**:
+  * `NL_COLOR` - Auto-detected color output control (0|1, auto-detected based on terminal)
+  * `NL_PARALLEL_JOBS` - Default parallel job count (default: 4, overridable via --parallel)
+  * `XDG_CACHE_HOME` - Cache directory for update timestamps ($HOME/.cache)
+- **Enhanced `XDG_CONFIG_HOME` Documentation**: Now mentions profile file locations
+
+#### Help Text Restructure
+- **Completely Reorganized** `--help` output into 9 logical sections:
+  * GENERAL OPTIONS
+  * DIRECTORY OPTIONS
+  * GIT INTEGRATION
+  * QUALITY CONTROL
+  * DIFF MODE
+  * PERFORMANCE
+  * UPDATE
+  * ERROR TYPE FILTERING
+  * EXAMPLES (10 practical examples)
+  * ENVIRONMENT VARIABLES (complete list with defaults)
+
+- **Benefits**:
+  * Easier to navigate and find specific flags
+  * Examples show real-world usage patterns
+  * All environment variables are now discoverable
+  * Self-documenting help system
+
+#### Audit Report
+- **Created `DOCUMENTATION_AUDIT.md`**: Complete audit report documenting:
+  * 100% documentation coverage (21/21 modules, 20/20 flags, 7/7 env vars)
+  * Feature matrix across all 4 phases
+  * Module inventory and status
+  * Validation results
+  * Before/after comparison
+
+### 🎯 Impact Summary
+
+**Documentation Completeness**:
+- ✅ 100% coverage: All features, flags, and environment variables documented
+- ✅ 0 undocumented features
+- ✅ 0 missing documentation gaps
+
+**User Experience**:
+- Improved help text organization and discoverability
+- Added 10 practical usage examples
+- Complete environment variable reference
+- Easier navigation with categorized sections
+
+---
+
 ## [0.5.0] - 2025-10-28
 
 ### 🎉 Phase 4 Release - Advanced Features

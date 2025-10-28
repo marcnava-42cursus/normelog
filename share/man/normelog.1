@@ -1,4 +1,4 @@
-.TH NORMELOG 1 "octubre 2025" "0.5.0" "User Commands"
+.TH NORMELOG 1 "octubre 2025" "0.5.1" "User Commands"
 .SH NAME
 normelog \- Analyzer and filter for norminette with statistics and text/JSON output
 .SH SYNOPSIS
@@ -145,11 +145,20 @@ Force output mode (text|json). Default: text.
 \fBNL_DEBUG\fR
 Enable debug output (1 enables). Default: 0.
 .TP
-\fBXDG_CONFIG_HOME\fR
-Base directory for user configuration. Default: $HOME/.config.
+\fBNL_COLOR\fR
+Force color output (1 enables, 0 disables). Default: auto-detected based on whether stdout is a terminal. Set to 0 to disable colors when piping output.
 .TP
 \fBNL_AUTO_UPDATE_CHECK\fR
 Enable or disable automatic update checks (1 enables, 0 disables). Default: 1.
+.TP
+\fBNL_PARALLEL_JOBS\fR
+Number of parallel jobs to use with \fB--parallel\fR. Default: 4. Can also be specified via the \fB--parallel\fR flag argument.
+.TP
+\fBXDG_CONFIG_HOME\fR
+Base directory for user configuration. Default: $HOME/.config. Profile files are searched in $XDG_CONFIG_HOME/normelog/profiles/.
+.TP
+\fBXDG_CACHE_HOME\fR
+Base directory for cache files. Default: $HOME/.cache. Used for storing update check timestamps in $XDG_CACHE_HOME/normelog/.
 .SH GIT INTEGRATION
 .B normelog
 supports incremental checking via git integration, useful for pre-commit hooks and CI/CD pipelines:

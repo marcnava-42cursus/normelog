@@ -26,31 +26,69 @@ NL_PARALLEL_JOBS=4
 nl_flags_help() {
 cat <<'HLP'
 Usage: normelog [OPTIONS] [ERROR_TYPE...]
-	-h, --help              Show help
-	-v, --version           Show version
-	-a                      Show detailed per-file listing
-	-I, --ignore-gitignore  Do not pass --use-gitignore when no directories are specified
-	-C <dir>, --chdir <dir>,
-	--chdir=<dir>         Change working directory before running
-	-d <dir> | -d<dir> | --directory=<dir>
-	-n <dir> | -n<dir> | --no-directory=<dir>
-	--json                  Output JSON
-	--debug                 Debug logs
-	--update                Check for and install updates
-	--no-update-check       Disable automatic update check
-	--staged                Check only staged files (git)
-	--since <ref>           Check files changed since commit/branch
-	--branch <ref>          Check files changed in current branch vs base
-	--watch                 Watch mode: re-run on file changes
-	--severity <level>      Minimum severity: CRITICAL, WARNING, INFO (default: INFO)
-	--max-errors <n>        Exit with error if total errors exceeds n
-	--profile <name>        Load configuration profile
-	--diff <file>           Compare with baseline JSON file
-	--save-baseline <file>  Save current results as baseline JSON
-	--parallel [jobs]       Run norminette in parallel (default: 4 jobs)
-	Patterns:
-	TYPE ...      include
-	-TYPE ...     exclude
+
+normelog - Analyzer and filter for norminette with statistics and text/JSON output
+
+GENERAL OPTIONS:
+  -h, --help               Show this help message and exit
+  -v, --version            Show version and exit
+  -a                       Show detailed per-file error listing
+  --json                   Output results in JSON format
+  --debug                  Enable debug logging to stderr
+  -C <dir>, --chdir <dir>  Change working directory before running
+
+DIRECTORY OPTIONS:
+  -d <dir>                 Analyze only specified directory (repeatable)
+  -n <dir>                 Exclude directory from analysis (repeatable)
+  -I, --ignore-gitignore   Do not use --use-gitignore with norminette
+
+GIT INTEGRATION:
+  --staged                 Check only staged files (for pre-commit hooks)
+  --since <ref>            Check files changed since commit/branch
+  --branch <ref>           Check files in current branch vs base (default: main)
+
+QUALITY CONTROL:
+  --severity <level>       Filter by minimum severity: CRITICAL, WARNING, INFO
+  --max-errors <n>         Exit with error if total errors exceeds n
+  --profile <name>         Load configuration profile (strict, dev, ci, etc.)
+
+DIFF MODE:
+  --diff <file>            Compare with baseline JSON file
+  --save-baseline <file>   Save current results as baseline JSON
+
+PERFORMANCE:
+  --parallel [jobs]        Run norminette in parallel (default: 4 jobs)
+  --watch                  Continuously monitor files and re-run on changes
+
+UPDATE:
+  --update                 Check for and install latest version
+  --no-update-check        Disable automatic update check for this run
+
+ERROR TYPE FILTERING:
+  TYPE ...                 Include only these error types (case-insensitive)
+  -TYPE ...                Exclude these error types
+
+EXAMPLES:
+  normelog                              # Check current directory
+  normelog -a                           # Show all error details
+  normelog --json                       # Output as JSON
+  normelog FORBIDDEN SPACE              # Only show these error types
+  normelog -EMPTY_LINE_EOF              # Exclude this error type
+  normelog --profile strict             # Use strict profile
+  normelog --staged                     # Pre-commit hook
+  normelog --parallel 8                 # Use 8 parallel jobs
+  normelog --watch --profile dev        # Watch mode with dev profile
+
+ENVIRONMENT VARIABLES:
+  NL_OUTPUT              Output format (text|json)
+  NL_DEBUG               Enable debug mode (0|1)
+  NL_COLOR               Force color output (0|1, auto-detected)
+  NL_AUTO_UPDATE_CHECK   Enable update checks (0|1, default: 1)
+  NL_PARALLEL_JOBS       Default parallel jobs (default: 4)
+  XDG_CONFIG_HOME        Config directory ($HOME/.config)
+  XDG_CACHE_HOME         Cache directory ($HOME/.cache)
+
+For detailed documentation, see: man normelog
 HLP
 }
 
