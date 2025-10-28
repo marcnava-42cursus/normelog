@@ -594,12 +594,12 @@ normelog --interactive
 - ✅ Plugin System (v0.3.0)
 - ✅ Update Mechanism (v0.3.0)
 
-**Medium Priority** (6, 2 implemented):
-- Configuration Profiles
+**Medium Priority** (6, 6 implemented):
+- ✅ Configuration Profiles (v0.5.0)
 - ✅ Watch Mode (v0.4.0)
 - ✅ Error Severity Levels (v0.4.0)
-- Diff Mode
-- Parallel Execution
+- ✅ Diff Mode (v0.5.0)
+- ✅ Parallel Execution (v0.5.0)
 - ✅ Exit Code Customization (v0.4.0 - via --max-errors)
 
 **Low Priority** (5):
@@ -632,13 +632,13 @@ normelog --interactive
 3. ✅ Error severity levels
 4. ✅ Better error messages
 
-### Phase 4 (v0.5.0) - Advanced Features
-1. Diff mode
-2. Configuration profiles
-3. Parallel execution
-4. Exit code customization
+### Phase 4 (v0.5.0) - Advanced Features ✅ COMPLETED
+1. ✅ Diff mode
+2. ✅ Configuration profiles
+3. ✅ Parallel execution
+4. ✅ Exit code customization (already done in v0.4.0 via --max-errors)
 
-### Phase 5 (v1.0.0) - Polish
+### Phase 5 (v0.6.0) - Polish
 1. HTML reports
 2. External tool integration
 3. Performance optimizations

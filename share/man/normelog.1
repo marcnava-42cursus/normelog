@@ -1,4 +1,4 @@
-.TH NORMELOG 1 "octubre 2025" "0.4.0" "User Commands"
+.TH NORMELOG 1 "octubre 2025" "0.5.0" "User Commands"
 .SH NAME
 normelog \- Analyzer and filter for norminette with statistics and text/JSON output
 .SH SYNOPSIS
@@ -77,6 +77,18 @@ Filter errors by minimum severity level. Valid levels: CRITICAL, WARNING, INFO. 
 .TP
 .B \-\-max\-errors \fIN\fR
 Exit with error code 1 if total error count exceeds \fIN\fR. Useful for CI/CD pipelines with strict quality gates.
+.TP
+.B \-\-profile \fINAME\fR
+Load configuration profile from \fI$XDG_CONFIG_HOME/normelog/profiles/NAME.conf\fR or \fI/etc/normelog/profiles/NAME.conf\fR. Profiles allow maintaining different configurations for different use cases (e.g., strict, dev, ci).
+.TP
+.B \-\-diff \fIFILE\fR
+Compare current run with baseline JSON file and show what errors were fixed or newly introduced. Requires \-\-json output. Exit code 0 if improved or same, 1 if worse.
+.TP
+.B \-\-save\-baseline \fIFILE\fR
+Save current results as baseline JSON file for later comparison with \-\-diff. Requires \-\-json output.
+.TP
+.B \-\-parallel [\fIJOBS\fR]
+Run norminette on multiple files in parallel for faster execution on large codebases. Default: 4 jobs. Requires GNU parallel or xargs with \-P support.
 .PP
 Error type arguments:
 .RS
@@ -173,6 +185,64 @@ Errors are classified into three severity levels:
 .RE
 .PP
 Use \fB\-\-severity CRITICAL\fR to show only critical errors, or \fB\-\-severity WARNING\fR to exclude info-level errors. The text output includes a severity breakdown by default.
+.SH CONFIGURATION PROFILES
+.B normelog
+supports configuration profiles for maintaining different settings for different use cases. Create profile files in \fI$XDG_CONFIG_HOME/normelog/profiles/\fR (or \fI/etc/normelog/profiles/\fR for system-wide profiles).
+.PP
+Example profiles:
+.RS
+.IP \(bu 2
+\fBstrict\fR: No exclusions, fail on any error, show all details. For final code review and submission.
+.IP \(bu 2
+\fBdev\fR: Exclude minor formatting issues, allow up to 50 errors. For active development.
+.IP \(bu 2
+\fBci\fR: JSON output, critical errors only, max 10 errors. For CI/CD pipelines.
+.RE
+.PP
+Usage: \fBnormelog --profile strict\fR
+.PP
+Profile files are sourced as shell scripts and can override any \fBNL_*\fR variables. Example profiles are provided in \fIshare/examples/profiles/\fR.
+.SH DIFF MODE
+Compare norminette results across code changes to track progress and verify fixes:
+.PP
+.nf
+# Create baseline
+normelog --json --save-baseline baseline.json
+
+# After making changes
+normelog --json --diff baseline.json
+.fi
+.PP
+The diff output shows:
+.RS
+.IP \(bu 2
+\fBFixed\fR: Errors present in baseline but not in current run
+.IP \(bu 2
+\fBNew\fR: Errors in current run but not in baseline
+.IP \(bu 2
+\fBUnchanged\fR: Errors present in both runs
+.RE
+.PP
+Exit code is 0 if the current run is better or equal to the baseline, 1 if worse (more new errors than fixed). Useful in CI to prevent quality regression.
+.SH PARALLEL EXECUTION
+For large codebases with many files, use \fB\-\-parallel\fR to run norminette on multiple files simultaneously:
+.PP
+.nf
+normelog --parallel      # Use 4 jobs (default)
+normelog --parallel 8    # Use 8 jobs
+.fi
+.PP
+Requirements:
+.RS
+.IP \(bu 2
+GNU \fBparallel\fR (preferred): Install with \fBapt-get install parallel\fR or \fBbrew install parallel\fR
+.IP \(bu 2
+\fBxargs\fR with \fB\-P\fR support (fallback): Usually pre-installed on most systems
+.RE
+.PP
+The tool automatically detects which parallelization method is available. If neither is found, it falls back to sequential execution with a warning.
+.PP
+Parallel execution is most beneficial for projects with 50+ files. For smaller projects, the overhead may not be worth it.
 .SH EXIT STATUS
 .TP
 0
@@ -211,12 +281,30 @@ nl_hook_pre_norminette() {
 normelog includes automatic update checking via GitHub Releases. By default, it checks once per 24 hours and notifies when a new version is available. Use \fB--update\fR to manually trigger an update, or \fB--no-update-check\fR to disable the check for a single run. Set \fBNL_AUTO_UPDATE_CHECK=0\fR in your environment or config to permanently disable automatic checks.
 .SH EXAMPLES
 .nf
+# Basic usage
 normelog
 normelog -a
 normelog SPACE TAB
 normelog -d src -n build FORBIDDEN
 normelog -C ../other-project -I -a
 normelog --json INVALID_HEADER LINE_TOO_LONG
+
+# Configuration profiles
+normelog --profile strict        # Use strict profile
+normelog --profile dev           # Use dev profile
+
+# Diff mode
+normelog --json --save-baseline before.json
+# ... make changes ...
+normelog --json --diff before.json
+
+# Parallel execution
+normelog --parallel              # Use 4 jobs
+normelog --parallel 8            # Use 8 jobs
+
+# Combined features
+normelog --profile ci --parallel 4 --staged
+normelog --watch --profile dev
 .fi
 .SH FILES
 .nf

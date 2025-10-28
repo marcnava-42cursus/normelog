@@ -38,6 +38,8 @@ fi
 . "$LIB_DIR/git.sh"
 . "$LIB_DIR/watch.sh"
 . "$LIB_DIR/severity.sh"
+. "$LIB_DIR/diff.sh"
+. "$LIB_DIR/parallel.sh"
 
 main() {
   nl_env_init
@@ -123,8 +125,17 @@ main() {
   nl_log_debug "Running norminette..."
   local output
   set +e
-  output=$(nl_run_norminette)
-  rc=$?
+
+  # Use parallel execution if requested
+  if [[ "${NL_PARALLEL:-0}" -eq 1 ]]; then
+	nl_log_debug "Using parallel execution with ${NL_PARALLEL_JOBS} jobs"
+	output=$(nl_parallel_run_norminette)
+	rc=$?
+  else
+	output=$(nl_run_norminette)
+	rc=$?
+  fi
+
   set -e
   if [[ $rc -eq 127 ]]; then
 	nl_log_error "norminette not found in PATH"
@@ -170,11 +181,36 @@ main() {
   # Call pre-format hook
   nl_hook_pre_format
 
+  # Generate output (JSON or text)
+  local output_result
   if [[ "$NL_OUTPUT" == "json" ]]; then
-	nl_format_json "$filtered" "$stats"
+	output_result=$(nl_format_json "$filtered" "$stats")
   else
-	nl_format_text "$filtered" "$stats" "$severity_stats"
+	output_result=$(nl_format_text "$filtered" "$stats" "$severity_stats")
   fi
+
+  # Handle diff mode
+  if [[ -n "${NL_DIFF_BASELINE:-}" ]]; then
+	# For diff mode, we need JSON output
+	if [[ "$NL_OUTPUT" != "json" ]]; then
+		nl_log_error "Diff mode requires JSON output. Use --json or run: normelog --json > baseline.json"
+		exit 1
+	fi
+	nl_diff_compare "$NL_DIFF_BASELINE" "$output_result"
+	exit $?
+  fi
+
+  # Handle save-baseline mode
+  if [[ -n "${NL_SAVE_BASELINE:-}" ]]; then
+	if [[ "$NL_OUTPUT" != "json" ]]; then
+		nl_log_error "Save baseline requires JSON output. Use --json with --save-baseline"
+		exit 1
+	fi
+	nl_diff_save_baseline "$NL_SAVE_BASELINE" "$output_result"
+  fi
+
+  # Output results
+  echo "$output_result"
 
   # Check for updates (unless disabled)
   if [[ "${NL_NO_UPDATE_CHECK:-0}" -eq 0 ]]; then

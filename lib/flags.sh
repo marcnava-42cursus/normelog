@@ -17,6 +17,11 @@ NL_WATCH=0
 NL_ORIGINAL_ARGS=()
 NL_MIN_SEVERITY=""
 NL_MAX_ERRORS=""
+NL_DIFF_BASELINE=""
+NL_SAVE_BASELINE=""
+NL_PROFILE=""
+NL_PARALLEL=0
+NL_PARALLEL_JOBS=4
 
 nl_flags_help() {
 cat <<'HLP'
@@ -39,6 +44,10 @@ Usage: normelog [OPTIONS] [ERROR_TYPE...]
 	--watch                 Watch mode: re-run on file changes
 	--severity <level>      Minimum severity: CRITICAL, WARNING, INFO (default: INFO)
 	--max-errors <n>        Exit with error if total errors exceeds n
+	--profile <name>        Load configuration profile
+	--diff <file>           Compare with baseline JSON file
+	--save-baseline <file>  Save current results as baseline JSON
+	--parallel [jobs]       Run norminette in parallel (default: 4 jobs)
 	Patterns:
 	TYPE ...      include
 	-TYPE ...     exclude
@@ -132,6 +141,38 @@ nl_flags_parse() {
 				NL_MAX_ERRORS="$2"
 				shift
 				;;
+		--profile)
+			if [[ -z ${2:-} ]]; then
+				echo "Error: --profile requires a profile name" >&2
+				exit 1
+			fi
+			NL_PROFILE="$2"
+			shift
+			;;
+		--diff)
+			if [[ -z ${2:-} ]]; then
+				echo "Error: --diff requires a baseline file path" >&2
+				exit 1
+			fi
+			NL_DIFF_BASELINE="$2"
+			shift
+			;;
+		--save-baseline)
+			if [[ -z ${2:-} ]]; then
+				echo "Error: --save-baseline requires a file path" >&2
+				exit 1
+			fi
+			NL_SAVE_BASELINE="$2"
+			shift
+			;;
+		--parallel)
+			NL_PARALLEL=1
+			# Optional: accept number of jobs
+			if [[ -n ${2:-} ]] && [[ $2 =~ ^[0-9]+$ ]]; then
+				NL_PARALLEL_JOBS="$2"
+				shift
+			fi
+			;;
 			-d*)
 				if [[ ${#1} -gt 2 ]]; then
 					NL_DIRS+=("${1#-d}");
