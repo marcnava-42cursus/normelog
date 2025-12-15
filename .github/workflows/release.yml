@@ -16,14 +16,18 @@ jobs:
 
       - name: Prepare artifact
         run: |
-          mkdir -p dist
-          cp bin/normelog dist/
-          chmod +x dist/normelog
+          tag="${GITHUB_REF_NAME}"
+          mkdir -p dist/normelog
+
+          cp -r bin lib share plugins.d scripts dist/normelog/
+          cp README.md CHANGELOG.md TODO.md LICENSE Makefile CLAUDE.md ERRORS.md FIXED.md PHASE4_IMPLEMENTATION.md dist/normelog/
+
+          tar -czf "dist/normelog-${tag}.tar.gz" -C dist normelog
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/normelog
+            dist/normelog-*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

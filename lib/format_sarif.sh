@@ -19,9 +19,9 @@ nl_format_sarif() {
 	error_types=$(echo "$stats" | awk '/^TYPE / {print $2}' | sort -u)
 
 	# Generate SARIF JSON
-	cat <<'SARIF_HEADER'
+	cat <<SARIF_HEADER
 {
-	"$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+	"\$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
 	"version": "2.1.0",
 	"runs": [
 		{
@@ -29,7 +29,7 @@ nl_format_sarif() {
 				"driver": {
 					"name": "normelog",
 					"informationUri": "https://github.com/marcnava-42cursus/normelog",
-					"version": "0.6.0",
+					"version": "${NL_VERSION}",
 					"rules": [
 SARIF_HEADER
 
@@ -103,11 +103,12 @@ SARIF_RULES_END
 			message = substr($0, index($0, $5))
 
 			# Escape JSON special characters
-			gsub(/\\/, "\\\\", current_file)
-			gsub(/"/, "\\\"", current_file)
-			gsub(/\n/, "\\n", current_file)
-			gsub(/\r/, "\\r", current_file)
-			gsub(/\t/, "\\t", current_file)
+			file = current_file
+			gsub(/\\/, "\\\\", file)
+			gsub(/"/, "\\\"", file)
+			gsub(/\n/, "\\n", file)
+			gsub(/\r/, "\\r", file)
+			gsub(/\t/, "\\t", file)
 
 			gsub(/\\/, "\\\\", message)
 			gsub(/"/, "\\\"", message)
@@ -133,7 +134,7 @@ SARIF_RULES_END
 			print "\t\t\t\t\t\t{"
 			print "\t\t\t\t\t\t\t\"physicalLocation\": {"
 			print "\t\t\t\t\t\t\t\t\"artifactLocation\": {"
-			print "\t\t\t\t\t\t\t\t\t\"uri\": \"" current_file "\""
+			print "\t\t\t\t\t\t\t\t\t\"uri\": \"" file "\""
 			print "\t\t\t\t\t\t\t\t},"
 			print "\t\t\t\t\t\t\t\t\"region\": {"
 			print "\t\t\t\t\t\t\t\t\t\"startLine\": " line_num ","
@@ -142,7 +143,7 @@ SARIF_RULES_END
 			print "\t\t\t\t\t\t\t}"
 			print "\t\t\t\t\t\t}"
 			print "\t\t\t\t\t]"
-			printf "\t\t\t\t}"
+			print "\t\t\t\t}"
 		}
 	' <<<"$filtered"
 

@@ -312,26 +312,24 @@ normelog --watch
 
 ---
 
-### 9. **HTML Report Generation** 🟢 LOW PRIORITY
+### 9. **HTML Report Generation** 🟢 LOW PRIORITY ✅ IMPLEMENTED (v0.6.0)
 
-**Description**: Generate a beautiful HTML report with syntax highlighting and navigation.
+**Status**: Implemented (`--html` / `--format html`)
 
-**Use Case**: Code reviews, CI artifacts, team dashboards
+**Description**: Generate a standalone HTML report suitable for sharing or CI artifacts.
 
-**Implementation**:
+**Usage**:
 ```bash
 normelog --html > report.html
-
-# Or
-normelog --html --output report.html
+# or
+normelog --format html > report.html
 ```
 
 **Features**:
-- Syntax-highlighted code snippets
-- Clickable file navigation
-- Error grouping and filtering
-- Charts/graphs for error distribution
-- Responsive design for mobile viewing
+- Summary cards (OK/ERR/Total + severity when available)
+- Error type breakdown
+- Per-file grouped error listing
+- Responsive layout for mobile viewing
 
 ---
 
@@ -536,13 +534,15 @@ NL_MAX_PER_FILE=10
 
 ---
 
-### 19. **Integration with External Tools** 🟢 LOW PRIORITY
+### 19. **Integration with External Tools** 🟢 LOW PRIORITY 🟡 PARTIALLY IMPLEMENTED (v0.6.0)
 
 **Description**: Export data to popular tools and formats.
 
-**Formats**:
-- JUnit XML (for Jenkins, GitLab CI)
-- SARIF (Static Analysis Results Interchange Format)
+**Implemented**:
+- ✅ JUnit XML (for Jenkins, GitLab CI)
+- ✅ SARIF (Static Analysis Results Interchange Format)
+
+**Still missing**:
 - Checkstyle XML (for SonarQube)
 - GitHub Actions annotations
 
@@ -550,7 +550,6 @@ NL_MAX_PER_FILE=10
 ```bash
 normelog --format junit > results.xml
 normelog --format sarif > results.sarif
-normelog --github-actions  # Emits ::error:: annotations
 ```
 
 ---
@@ -602,12 +601,12 @@ normelog --interactive
 - ✅ Parallel Execution (v0.5.0)
 - ✅ Exit Code Customization (v0.4.0 - via --max-errors)
 
-**Low Priority** (5):
-- HTML Report
+**Low Priority** (6, 2 implemented):
+- ✅ HTML Report (v0.6.0)
 - Statistics Tracking
 - Auto-Fix Mode
 - LSP Support
-- External Tool Integration
+- ✅ External Tool Integration (JUnit/SARIF) (v0.6.0)
 - Interactive Mode
 
 ---
@@ -638,8 +637,8 @@ normelog --interactive
 3. ✅ Parallel execution
 4. ✅ Exit code customization (already done in v0.4.0 via --max-errors)
 
-### Phase 5 (v0.6.0) - Polish
-1. HTML reports
-2. External tool integration
-3. Performance optimizations
-4. Comprehensive documentation
+### Phase 5 (v0.6.0) - Polish ✅ COMPLETED
+1. ✅ HTML reports
+2. ✅ External tool integration (JUnit/SARIF)
+3. ✅ Performance optimizations
+4. ✅ Comprehensive documentation

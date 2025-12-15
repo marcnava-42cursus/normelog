@@ -45,11 +45,18 @@ nl_update_apply() {
   latest="${latest#v}"
   local current="${NL_VERSION#v}"
 
-  # Check if already up to date
-  if [[ "$latest" == "$current" ]]; then
-    nl_log_info "Already on latest version: v$current"
-    return 0
-  fi
+  # Check if already up to date (or ahead)
+  nl_version_compare "$latest" "$current"
+  case $? in
+    0)
+      nl_log_info "Already on latest version: v$current"
+      return 0
+      ;;
+    2)
+      nl_log_info "Current version is newer than latest release: v$current (latest: v$latest)"
+      return 0
+      ;;
+  esac
 
   nl_log_info "New version available: v$latest (current: v$current)"
   nl_log_info "Downloading from GitHub..."

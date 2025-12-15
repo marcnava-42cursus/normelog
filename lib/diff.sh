@@ -7,124 +7,81 @@ nl_diff_compare() {
 
 	if [[ ! -f "$baseline_file" ]]; then
 		nl_log_error "Baseline file not found: $baseline_file"
-		exit 1
+		return 1
 	fi
 
-	# Parse both JSON files and compare
-	awk -v baseline_file="$baseline_file" -v current="$current_json" '
-	BEGIN {
-		# Read baseline JSON
-		while ((getline line < baseline_file) > 0) {
-			baseline = baseline line
-		}
-		close(baseline_file)
+	if ! command -v python3 >/dev/null 2>&1; then
+		nl_log_error "Diff mode requires python3 to parse JSON baselines"
+		return 1
+	fi
 
-		# Parse baseline errors into array: file:line:col:type -> message
-		parse_errors(baseline, baseline_errors)
+	python3 -c '
+import json
+import sys
 
-		# Parse current errors
-		parse_errors(current, current_errors)
+baseline_path = sys.argv[1]
+current_raw = sys.stdin.read()
 
-		# Compare
-		fixed = 0
-		new_err = 0
-		unchanged = 0
+try:
+    with open(baseline_path, "r", encoding="utf-8") as f:
+        baseline = json.load(f)
+except Exception as exc:
+    print(f"Error: failed to read baseline JSON: {exc}", file=sys.stderr)
+    sys.exit(1)
 
-		# Find fixed errors (in baseline but not in current)
-		for (key in baseline_errors) {
-			if (!(key in current_errors)) {
-				fixed++
-				fixed_list[fixed] = key " | " baseline_errors[key]
-			} else {
-				unchanged++
-			}
-		}
+try:
+    current = json.loads(current_raw)
+except Exception as exc:
+    print(f"Error: failed to parse current JSON: {exc}", file=sys.stderr)
+    sys.exit(1)
 
-		# Find new errors (in current but not in baseline)
-		for (key in current_errors) {
-			if (!(key in baseline_errors)) {
-				new_err++
-				new_list[new_err] = key " | " current_errors[key]
-			}
-		}
 
-		# Output results
-		print "=== Norminette Diff Results ==="
-		print ""
-		printf "✅ Fixed:     %d error(s)\n", fixed
-		printf "❌ New:       %d error(s)\n", new_err
-		printf "➡️  Unchanged: %d error(s)\n", unchanged
-		print ""
+def extract_errors(obj):
+    out = {}
+    for file_obj in obj.get("files", []):
+        file_name = file_obj.get("file", "")
+        for err in file_obj.get("errors", []):
+            err_type = err.get("type", "")
+            line = err.get("line", "")
+            col = err.get("col", "")
+            msg = err.get("message", "")
+            key = f"{file_name}:{line}:{col}:{err_type}"
+            out[key] = msg
+    return out
 
-		# Show details
-		if (fixed > 0) {
-			print "Fixed Errors:"
-			for (i = 1; i <= fixed; i++) {
-				split(fixed_list[i], parts, " | ")
-				split(parts[1], loc, ":")
-				printf "  - %s:%s:%s [%s] %s\n", loc[1], loc[2], loc[3], loc[4], parts[2]
-			}
-			print ""
-		}
 
-		if (new_err > 0) {
-			print "New Errors:"
-			for (i = 1; i <= new_err; i++) {
-				split(new_list[i], parts, " | ")
-				split(parts[1], loc, ":")
-				printf "  - %s:%s:%s [%s] %s\n", loc[1], loc[2], loc[3], loc[4], parts[2]
-			}
-			print ""
-		}
+baseline_errors = extract_errors(baseline)
+current_errors = extract_errors(current)
 
-		# Exit code: 0 if improved or same, 1 if worse
-		exit_code = (new_err > fixed) ? 1 : 0
-		exit exit_code
-	}
+fixed_keys = sorted(k for k in baseline_errors if k not in current_errors)
+new_keys = sorted(k for k in current_errors if k not in baseline_errors)
+unchanged = sum(1 for k in baseline_errors if k in current_errors)
 
-	function parse_errors(json, errors,    files_match, file, line, col, type, msg) {
-		# Extract files array from JSON
-		if (match(json, /"files": \[([^\]]+)\]/, files_match)) {
-			files_str = files_match[1]
+print("=== Norminette Diff Results ===")
+print()
+print(f"✅ Fixed:     {len(fixed_keys)} error(s)")
+print(f"❌ New:       {len(new_keys)} error(s)")
+print(f"➡️  Unchanged: {unchanged} error(s)")
+print()
 
-			# Split by file objects
-			n = split(files_str, file_objs, /\}, \{/)
-			for (i = 1; i <= n; i++) {
-				obj = file_objs[i]
+if fixed_keys:
+    print("Fixed Errors:")
+    for k in fixed_keys:
+        file_name, line, col, err_type = k.rsplit(":", 3)
+        msg = baseline_errors.get(k, "")
+        print(f"  - {file_name}:{line}:{col} [{err_type}] {msg}")
+    print()
 
-				# Extract file name
-				if (match(obj, /"file": "([^"]+)"/, file_match)) {
-					file = file_match[1]
-				}
+if new_keys:
+    print("New Errors:")
+    for k in new_keys:
+        file_name, line, col, err_type = k.rsplit(":", 3)
+        msg = current_errors.get(k, "")
+        print(f"  - {file_name}:{line}:{col} [{err_type}] {msg}")
+    print()
 
-				# Extract errors array for this file
-				if (match(obj, /"errors": \[([^\]]+)\]/, errors_match)) {
-					errors_str = errors_match[1]
-
-					# Split by error objects
-					m = split(errors_str, err_objs, /\}, \{/)
-					for (j = 1; j <= m; j++) {
-						err = err_objs[j]
-
-						# Extract error fields
-						if (match(err, /"type":"([^"]+)"/, type_match)) type = type_match[1]
-						if (match(err, /"line":([0-9]+)/, line_match)) line = line_match[1]
-						if (match(err, /"col":([0-9]+)/, col_match)) col = col_match[1]
-						if (match(err, /"message":"([^"]+)"/, msg_match)) {
-							msg = msg_match[1]
-							# Unescape JSON
-							gsub(/\\"/, "\"", msg)
-						}
-
-						# Create unique key
-						key = file ":" line ":" col ":" type
-						errors[key] = msg
-					}
-				}
-			}
-		}
-	}
-	'
+sys.exit(1 if len(new_keys) > len(fixed_keys) else 0)
+' "$baseline_file" <<<"$current_json"
 }
 
 nl_diff_save_baseline() {

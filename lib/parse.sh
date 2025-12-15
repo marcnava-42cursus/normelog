@@ -6,15 +6,29 @@
 
 nl_parse_output() {
 	awk '
-		/^[^ \t].*\.(c|h):[ \t]*(OK!|Error!)/ {
-		file=$0; sub(/:.*/, "", file);
-		status=($0 ~ /OK!/) ? "OK" : "ERR";
-		print "FILE", file, "STATUS", status; next;
+		{
+			line = $0
+			# Strip ANSI color codes from norminette output (e.g., \033[97m...\033[0m)
+			gsub(/\033\[[0-9;]*m/, "", line)
+
+			if (line ~ /^[^ \t].*\.(c|h):[ \t]*(OK!|Error!)/) {
+				file = line
+				sub(/:.*/, "", file)
+				status = (line ~ /OK!/) ? "OK" : "ERR"
+				print "FILE", file, "STATUS", status
+				next
+			}
+
+			if (line ~ /^Error:/) {
+				match(line, /^Error:[ \t]*([A-Z_]+).*line:[ \t]*([0-9]+).*col:[ \t]*([0-9]+)/, m)
+				type = m[1]
+				line_no = m[2]
+				col = m[3]
+				msg = line
+				sub(/^Error:[ \t]*[A-Z_]+[ \t]*\([^)]*\):[ \t]*/, "", msg)
+				print "ERR", type, line_no, col, msg
+				next
+			}
 		}
-		/^Error:/ {
-		match($0, /^Error:[ \t]*([A-Z_]+).*line:[ \t]*([0-9]+).*col:[ \t]*([0-9]+)/, m);
-		type=m[1]; line=m[2]; col=m[3];
-		msg=$0; sub(/^Error:[ \t]*[A-Z_]+[ \t]*\([^)]*\):[ \t]*/, "", msg);
-		print "ERR", type, line, col, msg;
-	}'
+	'
 }

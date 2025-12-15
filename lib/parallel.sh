@@ -25,7 +25,6 @@ nl_parallel_run_norminette() {
 	if [[ "$tool" == "none" ]]; then
 		nl_log_error "Parallel execution requires 'parallel' or 'xargs -P'"
 		nl_log_error "Install GNU parallel: apt-get install parallel (or brew install parallel)"
-		nl_log_error "Falling back to sequential execution..."
 		return 1
 	fi
 

@@ -37,7 +37,7 @@ normelog --json --diff baseline.json
 - Shows fixed, new, and unchanged errors
 - Detailed error locations (file:line:col)
 - Smart exit codes (0 = improved/same, 1 = worse)
-- AWK-based JSON parsing (no external dependencies)
+- JSON parsing via python3 (stdlib)
 
 ---
 

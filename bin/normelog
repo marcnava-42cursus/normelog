@@ -136,6 +136,11 @@ main() {
 	nl_log_debug "Using parallel execution with ${NL_PARALLEL_JOBS} jobs"
 	output=$(nl_parallel_run_norminette)
 	rc=$?
+	if [[ $rc -ne 0 ]]; then
+		nl_log_warn "Parallel execution unavailable, falling back to sequential"
+		output=$(nl_run_norminette)
+		rc=$?
+	fi
   else
 	output=$(nl_run_norminette)
 	rc=$?
@@ -238,7 +243,7 @@ main() {
   if [[ -n "${NL_MAX_ERRORS:-}" ]]; then
 	local total_errors
 	total_errors=$(echo "$stats" | awk '/^TOTAL_ERRORS/ {print $2}')
-	if [[ $total_errors -gt ${NL_MAX_ERRORS} ]]; then
+	if [[ -n "$total_errors" ]] && [[ $total_errors -gt ${NL_MAX_ERRORS} ]]; then
 		nl_log_error "Error threshold exceeded: $total_errors errors (max: ${NL_MAX_ERRORS})"
 		exit 1
 	fi

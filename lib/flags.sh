@@ -27,7 +27,7 @@ nl_flags_help() {
 cat <<'HLP'
 Usage: normelog [OPTIONS] [ERROR_TYPE...]
 
-normelog - Analyzer and filter for norminette with statistics and text/JSON output
+normelog - Analyzer and filter for norminette with statistics and multiple output formats
 
 GENERAL OPTIONS:
   -h, --help               Show this help message and exit
@@ -82,7 +82,7 @@ EXAMPLES:
   normelog --watch --profile dev        # Watch mode with dev profile
 
 ENVIRONMENT VARIABLES:
-  NL_OUTPUT              Output format (text|json)
+  NL_OUTPUT              Output format (text|json|html|junit|sarif)
   NL_DEBUG               Enable debug mode (0|1)
   NL_COLOR               Force color output (0|1, auto-detected)
   NL_AUTO_UPDATE_CHECK   Enable update checks (0|1, default: 1)

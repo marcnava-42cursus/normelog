@@ -1,12 +1,12 @@
-.TH NORMELOG 1 "October 2024" "0.5.1" "User Commands"
+.TH NORMELOG 1 "diciembre 2025" "0.6.0" "User Commands"
 .SH NAME
-normelog \- Analyzer and filter for norminette with statistics and text/JSON output
+normelog \- Analyzer and filter for norminette with statistics and multiple output formats
 .SH SYNOPSIS
 .B normelog
 [\fIOPTION\fR] [\fIDIRECTORY_OPTION\fR...] [\fIERROR_TYPE\fR...]
 .SH DESCRIPTION
 .B normelog
-runs norminette with sane defaults, filters results, computes statistics, and renders them as human text or JSON. It supports directory inclusion/exclusion, respect or ignore of .gitignore, execution from another directory, and optional plugin hooks.
+runs norminette with sane defaults, filters results, computes statistics, and renders them as text, JSON, HTML, JUnit XML, or SARIF. It supports directory inclusion/exclusion, respect or ignore of .gitignore, execution from another directory, and optional plugin hooks.
 .PP
 Internal pipeline:
 .RS
@@ -21,7 +21,7 @@ Filter records by error type include/exclude patterns
 .IP \(bu 2
 Compute statistics (OK/ERR counters, totals per type)
 .IP \(bu 2
-Format the final result as text or JSON
+Format the final result as text/JSON/HTML/JUnit/SARIF
 .RE
 .PP
 Requirement: \fBnorminette\fR available in the PATH.
@@ -140,7 +140,7 @@ These scripts can export variables like \fBNL_OUTPUT\fR or \fBNL_DEBUG\fR.
 .SH ENVIRONMENT
 .TP
 \fBNL_OUTPUT\fR
-Force output mode (text|json). Default: text.
+Force output mode (text|json|html|junit|sarif). Default: text.
 .TP
 \fBNL_DEBUG\fR
 Enable debug output (1 enables). Default: 0.
@@ -233,6 +233,8 @@ The diff output shows:
 .RE
 .PP
 Exit code is 0 if the current run is better or equal to the baseline, 1 if worse (more new errors than fixed). Useful in CI to prevent quality regression.
+.PP
+Diff mode requires \fBpython3\fR to parse JSON baselines.
 .SH PARALLEL EXECUTION
 For large codebases with many files, use \fB\-\-parallel\fR to run norminette on multiple files simultaneously:
 .PP

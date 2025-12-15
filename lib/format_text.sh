@@ -1,20 +1,29 @@
 #!/usr/bin/env bash
 nl_format_text() {
 	local records="$1" stats="$2" severity_stats="${3:-}"
-	echo "$stats" | awk '
-	/^STATS OK/ {ok=$3}
-	/^STATS ERR/ {er=$3}
-	END { printf "\033[32mCorrect files: %d\033[0m\n\033[31mIncorrect files: %d\033[0m\n\n", ok, er }
+	local green="" red="" yellow="" cyan="" reset=""
+	if [[ "${NL_COLOR:-1}" -eq 1 ]]; then
+		green=$'\033[32m'
+		red=$'\033[31m'
+		yellow=$'\033[33m'
+		cyan=$'\033[36m'
+		reset=$'\033[0m'
+	fi
+
+	echo "$stats" | awk -v green="$green" -v red="$red" -v reset="$reset" '
+	/^OK_FILES/ {ok=$2}
+	/^ERR_FILES/ {er=$2}
+	END { printf "%sCorrect files: %d%s\n%sIncorrect files: %d%s\n\n", green, ok, reset, red, er, reset }
 	'
 
 	# Show severity breakdown if available
 	if [[ -n "$severity_stats" ]]; then
 		echo "Error severity:"
 		echo "--------------------"
-		echo "$severity_stats" | awk '
-		/^SEVERITY_CRITICAL/ { printf "\033[31mCritical: %d\033[0m\n", $2 }
-		/^SEVERITY_WARNING/ { printf "\033[33mWarning:  %d\033[0m\n", $2 }
-		/^SEVERITY_INFO/ { printf "\033[36mInfo:     %d\033[0m\n", $2 }
+		echo "$severity_stats" | awk -v red="$red" -v yellow="$yellow" -v cyan="$cyan" -v reset="$reset" '
+		/^SEVERITY_CRITICAL/ { printf "%sCritical: %d%s\n", red, $2, reset }
+		/^SEVERITY_WARNING/ { printf "%sWarning:  %d%s\n", yellow, $2, reset }
+		/^SEVERITY_INFO/ { printf "%sInfo:     %d%s\n", cyan, $2, reset }
 		'
 		echo ""
 	fi
@@ -25,7 +34,7 @@ nl_format_text() {
 	echo ""
 
 	# Only show details if -a flag is set or if filtering by type
-	if [[ "${NL_SHOW_ALL_DETAILS:-0}" -eq 1 ]] || [[ ${#NL_INCLUDE_TYPES[@]} -gt 0 ]]; then
+	if [[ "${NL_SHOW_ALL_DETAILS:-0}" -eq 1 ]] || [[ -n "${NL_INCLUDE_TYPES[*]-}" ]]; then
 		echo "$records" | awk '
 		/^FILE /{file=$2}
 		/^ERR /{printf "%s\n    %s (line: %3s, col: %3s): %s\n", file, $2, $3, $4, substr($0, index($0,$5))}

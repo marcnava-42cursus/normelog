@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0] - 2025-12-15
+
+### 🎨 Phase 5 Release - Polish & Reliability
+
+This release focuses on output correctness (especially machine-readable formats), better packaging for updates, and quality-of-life improvements.
+
+### 🐛 Fixed
+
+- **Stable Stats Keys**: Standardized stats output to `OK_FILES`, `ERR_FILES`, `TOTAL_ERRORS` so all formatters and `--max-errors` behave consistently.
+- **Valid JSON Output**: Added proper JSON escaping and stripped ANSI color codes from norminette output to avoid invalid JSON.
+- **Robust Diff Mode**: Replaced fragile regex parsing with `python3` stdlib JSON parsing for `--diff` baselines.
+- **Parallel Fallback**: `--parallel` now falls back to sequential execution when parallel tools are unavailable.
+- **Update Semver Compare**: Update checks now use semantic version comparison instead of string comparison.
+- **Release Script Fix**: `scripts/release-tag.sh` now targets `lib/version.sh` and supports GNU/BSD `sed`.
+
+### ✨ Added
+
+- **Shell Completions**: Implemented functional Bash/Zsh completions for flags and common values.
+- **Release Artifacts**: GitHub Releases now publish a complete tarball (includes `bin/`, `lib/`, `share/`, etc.), improving install/update workflows.
+
+### 📚 Documentation
+
+- Updated README, man page, and CLAUDE docs to reflect new output formats and feature dependencies.
+- Added `DOCUMENTATION_AUDIT.md` as a quick documentation inventory/checklist.
+
 ## [0.5.1] - 2025-10-28
 
 ### 📚 Patch Release - Documentation Improvements
@@ -42,19 +67,12 @@ This patch release completes the documentation audit for v0.5.0, adding missing 
   * Self-documenting help system
 
 #### Audit Report
-- **Created `DOCUMENTATION_AUDIT.md`**: Complete audit report documenting:
-  * 100% documentation coverage (21/21 modules, 20/20 flags, 7/7 env vars)
-  * Feature matrix across all 4 phases
-  * Module inventory and status
-  * Validation results
-  * Before/after comparison
+- **Created `DOCUMENTATION_AUDIT.md`**: Documentation coverage checklist and inventory (modules, flags, env vars) with validation notes.
 
 ### 🎯 Impact Summary
 
 **Documentation Completeness**:
-- ✅ 100% coverage: All features, flags, and environment variables documented
-- ✅ 0 undocumented features
-- ✅ 0 missing documentation gaps
+- Expanded and centralized documentation for features, flags, and environment variables (see `DOCUMENTATION_AUDIT.md`)
 
 **User Experience**:
 - Improved help text organization and discoverability

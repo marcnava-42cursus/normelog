@@ -57,13 +57,6 @@ XML_HEADER
 			col = $4
 			message = substr($0, index($0, $5))
 
-			# Escape XML special characters
-			gsub(/&/, "\\&amp;", message)
-			gsub(/</, "\\&lt;", message)
-			gsub(/>/, "\\&gt;", message)
-			gsub(/"/, "\\&quot;", message)
-			gsub(/'\''/, "\\&apos;", message)
-
 			errors_text = errors_text sprintf("%s (line %s, col %s): %s\n", type, line, col, message)
 		}
 		END {
@@ -84,9 +77,11 @@ XML_HEADER
 			} else {
 				print "\t\t<testcase name=\"" file "\" classname=\"norminette\" time=\"0\">"
 				print "\t\t\t<failure message=\"Norminette errors found\" type=\"NormError\">"
+				# Escape XML special characters in body text
 				gsub(/&/, "\\&amp;", errors)
 				gsub(/</, "\\&lt;", errors)
 				gsub(/>/, "\\&gt;", errors)
+				gsub(/"/, "\\&quot;", errors)
 				print errors
 				print "\t\t\t</failure>"
 				print "\t\t</testcase>"

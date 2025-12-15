@@ -6,7 +6,7 @@
 # All variables are optional and have sensible defaults.
 # Uncomment and modify as needed.
 
-# Output format (text|json)
+# Output format (text|json|html|junit|sarif)
 # Default: text
 #NL_OUTPUT=text
 
@@ -50,9 +50,13 @@
 
 # Automatic update check (0|1)
 # When enabled, normelog checks for updates periodically
-# Note: Update mechanism not yet implemented
 # Default: 1
 #NL_AUTO_UPDATE_CHECK=1
+
+# Default parallel jobs (number)
+# Used when --parallel is enabled without an explicit job count.
+# Default: 4
+#NL_PARALLEL_JOBS=4
 
 # Examples of common configurations:
 

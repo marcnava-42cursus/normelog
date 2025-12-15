@@ -60,16 +60,20 @@ nl_update_check() {
   latest="${latest#v}"
   local current="${NL_VERSION#v}"
 
-  # Compare versions
-  if [[ "$latest" != "$current" ]]; then
-    # Simple version comparison (works for semantic versioning)
-    if [[ "$latest" > "$current" ]] || [[ "$latest" == "$current."* ]]; then
+  # Compare versions (semver)
+  nl_version_compare "$latest" "$current"
+  case $? in
+    0)
+      nl_log_debug "normelog is up to date (v$current)"
+      ;;
+    1)
       nl_log_info "New version available: v$latest (current: v$current)"
       nl_log_info "Run 'normelog --update' to upgrade"
-    fi
-  else
-    nl_log_debug "normelog is up to date (v$current)"
-  fi
+      ;;
+    2)
+      nl_log_debug "Local version is newer than latest release (v$current > v$latest)"
+      ;;
+  esac
 
   # Update cache timestamp
   date +%s > "$cache_file" 2>/dev/null || true

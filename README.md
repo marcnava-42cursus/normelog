@@ -1,6 +1,6 @@
 # normelog
 
-[![Version](https://img.shields.io/badge/version-0.6.0-blue.svg)](https://github.com/marcnava-42cursus/normelog/releases)
+[![Version](https://img.shields.io/github/v/release/marcnava-42cursus/normelog?sort=semver)](https://github.com/marcnava-42cursus/normelog/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A powerful, portable bash-based analyzer and filter for `norminette` with intelligent filtering, statistics tracking, and multiple output formats. Designed for 42 School students working with C projects.
@@ -34,6 +34,9 @@ A powerful, portable bash-based analyzer and filter for `norminette` with intell
 - **Smart Filtering**: Filter errors by type with include/exclude patterns
 - **Statistics Tracking**: Comprehensive error counts and file statistics
 - **Multiple Output Formats**: Text, JSON, HTML reports, JUnit XML, and SARIF for CI/CD integration
+- **Diff Mode**: Compare against a saved JSON baseline to detect regressions
+- **Configuration Profiles**: Load reusable settings with `--profile`
+- **Parallel Execution**: Speed up large scans with `--parallel [jobs]`
 - **Directory Management**: Include or exclude specific directories from analysis
 - **Gitignore Support**: Automatically respects `.gitignore` files (configurable)
 - **Git Integration**: Check only changed files with `--staged`, `--since`, or `--branch` flags
@@ -42,7 +45,7 @@ A powerful, portable bash-based analyzer and filter for `norminette` with intell
 - **Error Thresholds**: Set maximum error limits for CI/CD pipelines with `--max-errors`
 - **Modular Architecture**: Clean, maintainable bash codebase with separated concerns
 - **Shell Completions**: Bash and Zsh completion support out of the box
-- **Portable**: Pure bash implementation, works on any POSIX-compliant system
+- **Portable**: Pure bash implementation (Bash 4+), works across Linux/macOS environments
 - **Configurable**: System-wide and user-specific configuration files
 - **Plugin System**: Extensible architecture with hook-based plugins
 - **Auto-Update**: Automatic update checking and one-command updates from GitHub releases
@@ -52,7 +55,8 @@ A powerful, portable bash-based analyzer and filter for `norminette` with intell
 
 - `bash` (version 4.0 or higher)
 - `norminette` (available in PATH)
-- Standard Unix utilities: `awk`, `sed`, `grep`
+- Standard Unix utilities: `awk`, `sed`, `grep`, `find`
+- Optional (feature-dependent): `python3` (diff mode), `curl` (updates), `inotifywait`/`fswatch` (watch mode), `parallel` (parallel mode)
 
 ## Installation
 
@@ -194,6 +198,20 @@ When run without arguments, `normelog`:
 |------|-------------|
 | `--severity <level>` | Filter by minimum severity: CRITICAL, WARNING, or INFO (default: INFO) |
 | `--max-errors <n>` | Exit with error if total error count exceeds n (useful for CI/CD) |
+| `--profile <name>` | Load a configuration profile (e.g., `strict`, `dev`, `ci`) |
+
+#### Diff Mode
+
+| Flag | Description |
+|------|-------------|
+| `--save-baseline <file>` | Save current JSON results as a baseline |
+| `--diff <file>` | Compare current JSON results with a saved baseline |
+
+#### Performance Options
+
+| Flag | Description |
+|------|-------------|
+| `--parallel [jobs]` | Run norminette in parallel (uses GNU `parallel` or `xargs -P`, default jobs: 4) |
 
 ### Error Type Filtering
 
@@ -341,6 +359,30 @@ normelog --json | jq -r '.files[] | .file as $f | .errors[] |
   [$f, .type, .line, .col, .message] | @csv'
 ```
 
+#### HTML Output
+
+Generate a standalone HTML report:
+
+```bash
+normelog --html > report.html
+```
+
+#### JUnit XML Output
+
+Generate JUnit XML for CI systems:
+
+```bash
+normelog --format junit > report.xml
+```
+
+#### SARIF Output
+
+Generate SARIF for GitHub Code Scanning:
+
+```bash
+normelog --format sarif > report.sarif
+```
+
 ## How It Works
 
 ### Pipeline Architecture
@@ -379,7 +421,7 @@ normelog --json | jq -r '.files[] | .file as $f | .errors[] |
            │ Statistics + Records
            ▼
 ┌─────────────────────┐
-│  Format Output      │  Render as text or JSON
+│  Format Output      │  Render as text/JSON/HTML/JUnit/SARIF
 │  (lib/format_*.sh)  │
 └─────────────────────┘
 ```
@@ -438,10 +480,21 @@ normelog/
 │   ├── stats.sh             # Statistics computation
 │   ├── format_text.sh       # Text formatter
 │   ├── format_json.sh       # JSON formatter
-│   ├── update_check.sh      # Update checking (placeholder)
-│   └── update_apply.sh      # Update application (placeholder)
+│   ├── format_html.sh       # HTML formatter
+│   ├── format_junit.sh      # JUnit XML formatter
+│   ├── format_sarif.sh      # SARIF formatter
+│   ├── plugins.sh           # Plugin loader + hooks
+│   ├── git.sh               # Git integration (staged/since/branch)
+│   ├── watch.sh             # Watch mode (inotifywait/fswatch)
+│   ├── severity.sh          # Severity mapping + filtering
+│   ├── diff.sh              # Diff mode (baseline comparison)
+│   ├── parallel.sh          # Parallel execution
+│   ├── optimize.sh          # Performance helpers
+│   ├── update_check.sh      # Update checking
+│   └── update_apply.sh      # Update application
 ├── share/
 │   ├── completion/          # Shell completions
+│   ├── examples/            # Example configs and profiles
 │   └── man/                 # Manual pages
 ├── plugins.d/               # Plugin system (extensible)
 └── scripts/                 # Development tools
@@ -489,10 +542,13 @@ NL_SHOW_ALL_DETAILS=1
 
 | Variable | Values | Description |
 |----------|--------|-------------|
-| `NL_OUTPUT` | `text`, `json` | Force output format |
+| `NL_OUTPUT` | `text`, `json`, `html`, `junit`, `sarif` | Force output format |
 | `NL_DEBUG` | `0`, `1` | Enable debug messages |
+| `NL_COLOR` | `0`, `1` | Force color output (default: auto-detected) |
 | `NL_AUTO_UPDATE_CHECK` | `0`, `1` | Enable automatic update checking (default: 1) |
+| `NL_PARALLEL_JOBS` | number | Default parallel job count (default: 4) |
 | `XDG_CONFIG_HOME` | path | Base directory for user config |
+| `XDG_CACHE_HOME` | path | Base directory for cache files (update checks, etc.) |
 
 ### Precedence
 
@@ -901,12 +957,12 @@ make man
 
 ### Code Style
 
-- **Indentation**: 2 spaces
+- **Indentation**: tabs (see `.editorconfig`, `shfmt -i 0`)
 - **Line length**: 80 characters (flexible for readability)
 - **Function naming**: `nl_<module>_<action>` (e.g., `nl_parse_output`)
 - **Variable naming**: `NL_*` for globals, lowercase for locals
 - **Quote variables**: Always quote expansions unless intentionally splitting
-- **Use shellcheck**: All code must pass shellcheck
+- **Use shellcheck/shfmt**: Prefer keeping the code lint-clean (`make lint`)
 
 ### Adding New Modules
 
@@ -986,7 +1042,10 @@ setup() {
 ### Manual Testing
 
 You can also test normelog manually on fixtures:
-./bin/normelog -C tests/fixtures/sample-project -a
+
+```bash
+# Run against the included sample files
+./bin/normelog -C tests/fixtures -a
 
 # Test specific modules (source and call functions)
 bash -c 'source lib/parse.sh; echo "test.c: OK!" | nl_parse_output'

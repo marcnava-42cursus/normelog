@@ -2,14 +2,22 @@
 nl_format_json() {
 	local records="$1" stats="$2"
 	awk -v RS='\n' -v ORS='\n' -v rec="$records" -v st="$stats" '
+		function json_escape(s) {
+			gsub(/\\/, "\\\\", s)
+			gsub(/"/, "\\\"", s)
+			gsub(/\t/, "\\t", s)
+			gsub(/\r/, "\\r", s)
+			gsub(/\n/, "\\n", s)
+			return s
+		}
 		BEGIN {
 		print "{";
 		ok=err=0; total=0
 		n=split(st, S, "\n");
 		for (i=1;i<=n;i++) {
-			if (S[i] ~ /^STATS OK/) { split(S[i], a, " "); ok=a[3] }
-			else if (S[i] ~ /^STATS ERR/) { split(S[i], a, " "); err=a[3] }
-			else if (S[i] ~ /^TOTAL/) { split(S[i], a, " "); total=a[2] }
+			if (S[i] ~ /^OK_FILES/) { split(S[i], a, " "); ok=a[2] }
+			else if (S[i] ~ /^ERR_FILES/) { split(S[i], a, " "); err=a[2] }
+			else if (S[i] ~ /^TOTAL_ERRORS/) { split(S[i], a, " "); total=a[2] }
 			else if (S[i] ~ /^TYPE /) {
 			split(S[i], a, " "); types[a[2]]=a[3]
 			}
@@ -25,7 +33,7 @@ nl_format_json() {
 			if (!firstf) printf ", ";
 			firstf=0; firste=1;
 			split(R[i], a, " "); curf=a[2];
-			printf "{\"file\": \"%s\", \"errors\": [", curf
+			printf "{\"file\": \"%s\", \"errors\": [", json_escape(curf)
 			} else if (R[i] ~ /^ERR /) {
 			if (!firste) printf ", ";
 			firste=0;
@@ -33,8 +41,7 @@ nl_format_json() {
 			printf "{\"type\":\"%s\",\"line\":%d,\"col\":%d,\"message\":\"", a[2], a[3], a[4];
 			msg=index(R[i], a[5]);
 			msg_text = substr(R[i], msg);
-			gsub(/"/, "\\\"", msg_text);
-			printf "%s\"}", msg_text
+			printf "%s\"}", json_escape(msg_text)
 			}
 		}
 		if (curf!="") printf "]}";

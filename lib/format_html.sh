@@ -27,11 +27,11 @@ nl_format_html() {
 	# Parse severity stats if available
 	if [[ -n "$severity_stats" ]]; then
 		while IFS= read -r line; do
-			if [[ $line =~ ^CRITICAL\ (.+)$ ]]; then
+			if [[ $line =~ ^SEVERITY_CRITICAL\ (.+)$ ]]; then
 				critical_count="${BASH_REMATCH[1]}"
-			elif [[ $line =~ ^WARNING\ (.+)$ ]]; then
+			elif [[ $line =~ ^SEVERITY_WARNING\ (.+)$ ]]; then
 				warning_count="${BASH_REMATCH[1]}"
-			elif [[ $line =~ ^INFO\ (.+)$ ]]; then
+			elif [[ $line =~ ^SEVERITY_INFO\ (.+)$ ]]; then
 				info_count="${BASH_REMATCH[1]}"
 			fi
 		done <<<"$severity_stats"
@@ -346,10 +346,15 @@ HTML_ERROR_TYPES_END
 			}
 			/^ERR / {
 				if (error_count == 0) {
+					file_esc = current_file
+					gsub(/&/, "\\&amp;", file_esc)
+					gsub(/</, "\\&lt;", file_esc)
+					gsub(/>/, "\\&gt;", file_esc)
+					gsub(/"/, "\\&quot;", file_esc)
 					print "<div class=\"file-section\">"
 					print "  <div class=\"file-header\">"
-					print "    <span>" current_file "</span>"
-					print "    <span class=\"file-error-count\" id=\"count-" current_file "\"></span>"
+					print "    <span>" file_esc "</span>"
+					print "    <span class=\"file-error-count\"></span>"
 					print "  </div>"
 					print "  <div class=\"error-list\">"
 				}

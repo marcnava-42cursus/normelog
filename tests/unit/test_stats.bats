@@ -19,10 +19,10 @@ setup() {
   input="FILE test.c STATUS ERR
 ERR SPACE_TAB 5 3 space before tab
 ERR CONSECUTIVE_NEWLINES 11 1 consecutive newlines
-FILE other.c STATUS OK"
+  FILE other.c STATUS OK"
 
   result=$(echo "$input" | nl_compute_stats)
-  [[ "$result" =~ "TOTAL 2" ]]
+  [[ "$result" =~ "TOTAL_ERRORS 2" ]]
 }
 
 @test "stats counts errors by type" {
@@ -54,7 +54,7 @@ FILE test4.c STATUS OK"
 FILE test2.c STATUS OK"
 
   result=$(echo "$input" | nl_compute_stats)
-  [[ "$result" =~ "TOTAL 0" ]]
+  [[ "$result" =~ "TOTAL_ERRORS 0" ]]
   [[ "$result" =~ "OK_FILES 2" ]]
   [[ "$result" =~ "ERR_FILES 0" ]]
 }

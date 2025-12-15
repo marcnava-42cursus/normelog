@@ -4,6 +4,82 @@ This document tracks all errors and issues that have been resolved in the normel
 
 ---
 
+## Phase 5 (v0.6.0) - Polish & Reliability
+
+This phase focuses on robustness improvements, better packaging, and developer UX polish.
+
+### ✅ Stats Output Keys Standardized
+
+**Fixed**: 2025-12-15
+
+**Files**: `lib/stats.sh`, `bin/normelog`, `lib/format_text.sh`, `lib/format_json.sh`, `lib/format_html.sh`, `lib/format_junit.sh`, `lib/format_sarif.sh`, `tests/unit/test_stats.bats`
+
+**Issue**: Stats keys were inconsistent across modules (`STATS OK/ERR`, `TOTAL` vs `OK_FILES/ERR_FILES`, `TOTAL_ERRORS`), breaking formatters and `--max-errors`.
+
+**Solution**: Standardized stats output to `OK_FILES`, `ERR_FILES`, `TOTAL_ERRORS` and updated all consumers.
+
+---
+
+### ✅ JSON Output Escaping Fix
+
+**Fixed**: 2025-12-15
+
+**File**: `lib/format_json.sh`
+
+**Issue**: JSON output could be invalid due to unescaped tabs/newlines/backslashes in messages and file paths.
+
+**Solution**: Implemented proper JSON escaping for string fields.
+
+---
+
+### ✅ Diff Mode Baseline Parsing Fix
+
+**Fixed**: 2025-12-15
+
+**File**: `lib/diff.sh`
+
+**Issue**: Diff mode used a fragile regex-based parser that broke on nested JSON arrays.
+
+**Solution**: Switched to `python3` stdlib JSON parsing for robust baseline comparison.
+
+---
+
+### ✅ Parallel Mode Graceful Fallback
+
+**Fixed**: 2025-12-15
+
+**Files**: `bin/normelog`, `lib/parallel.sh`
+
+**Issue**: `--parallel` printed "falling back" but did not actually fallback to sequential execution.
+
+**Solution**: Implemented real fallback to sequential when parallel execution is unavailable.
+
+---
+
+### ✅ Completions Implemented
+
+**Fixed**: 2025-12-15
+
+**Files**: `share/completion/normelog.bash`, `share/completion/_normelog.zsh`
+
+**Issue**: Completion scripts were stubs.
+
+**Solution**: Added functional Bash/Zsh completion for flags and common values.
+
+---
+
+### ✅ Release Script Path Fix
+
+**Fixed**: 2025-12-15
+
+**File**: `scripts/release-tag.sh`
+
+**Issue**: Script referenced a non-existent `normelog/lib/version.sh` path.
+
+**Solution**: Updated to modify `lib/version.sh` and added GNU/BSD `sed` compatibility.
+
+---
+
 ## Phase 1 (v0.2.0) - Fix Existing Issues
 
 This phase focuses on fixing all critical errors from ERRORS.md and implementing missing core functionality.
@@ -545,4 +621,3 @@ This phase implements advanced features for quality tracking, configuration mana
 - Cross-platform support
 
 ---
-
