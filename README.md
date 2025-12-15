@@ -1,6 +1,6 @@
 # normelog
 
-[![Version](https://img.shields.io/badge/version-0.4.1-blue.svg)](https://github.com/marcnava-42cursus/normelog/releases)
+[![Version](https://img.shields.io/badge/version-0.6.0-blue.svg)](https://github.com/marcnava-42cursus/normelog/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A powerful, portable bash-based analyzer and filter for `norminette` with intelligent filtering, statistics tracking, and multiple output formats. Designed for 42 School students working with C projects.
@@ -33,7 +33,7 @@ A powerful, portable bash-based analyzer and filter for `norminette` with intell
 
 - **Smart Filtering**: Filter errors by type with include/exclude patterns
 - **Statistics Tracking**: Comprehensive error counts and file statistics
-- **Multiple Output Formats**: Human-readable text or machine-parsable JSON
+- **Multiple Output Formats**: Text, JSON, HTML reports, JUnit XML, and SARIF for CI/CD integration
 - **Directory Management**: Include or exclude specific directories from analysis
 - **Gitignore Support**: Automatically respects `.gitignore` files (configurable)
 - **Git Integration**: Check only changed files with `--staged`, `--since`, or `--branch` flags
@@ -60,7 +60,7 @@ A powerful, portable bash-based analyzer and filter for `norminette` with intell
 
 ```bash
 # Clone or download the repository
-git clone https://github.com/yourusername/normelog.git
+git clone https://github.com/marcnava-42cursus/normelog.git
 cd normelog
 
 # Install to /usr/local (requires sudo)
@@ -164,6 +164,8 @@ When run without arguments, `normelog`:
 | Flag | Description |
 |------|-------------|
 | `--json` | Output results in JSON format |
+| `--html` | Output results as HTML report |
+| `--format <fmt>` | Specify output format: `text`, `json`, `html`, `junit`, or `sarif` |
 
 #### Update Options
 
@@ -555,7 +557,7 @@ jobs:
 
       - name: Install normelog
         run: |
-          git clone https://github.com/yourusername/normelog.git
+          git clone https://github.com/marcnava-42cursus/normelog.git
           cd normelog && sudo make install
 
       - name: Run norm check

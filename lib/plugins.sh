@@ -30,7 +30,7 @@ nl_plugins_load() {
     # Source the plugin with error handling
     # shellcheck disable=SC1090
     if . "$plugin"; then
-      ((loaded_count++))
+      loaded_count=$((loaded_count + 1))
       nl_log_debug "Successfully loaded plugin: $(basename "$plugin")"
     else
       nl_log_warn "Failed to load plugin: $(basename "$plugin")"

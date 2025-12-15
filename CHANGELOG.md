@@ -489,8 +489,8 @@ This release focuses on fixing all critical and medium-priority bugs identified 
 
 ## Links
 
-- **Repository**: https://github.com/yourusername/normelog
-- **Bug Reports**: https://github.com/yourusername/normelog/issues
+- **Repository**: https://github.com/marcnava-42cursus/normelog
+- **Bug Reports**: https://github.com/marcnava-42cursus/normelog/issues
 - **Documentation**: See `README.md` and `man normelog`
 
 ---

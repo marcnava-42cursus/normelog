@@ -32,6 +32,9 @@ fi
 . "$LIB_DIR/stats.sh"
 . "$LIB_DIR/format_text.sh"
 . "$LIB_DIR/format_json.sh"
+. "$LIB_DIR/format_html.sh"
+. "$LIB_DIR/format_junit.sh"
+. "$LIB_DIR/format_sarif.sh"
 . "$LIB_DIR/update_check.sh"
 . "$LIB_DIR/update_apply.sh"
 . "$LIB_DIR/plugins.sh"
@@ -40,10 +43,12 @@ fi
 . "$LIB_DIR/severity.sh"
 . "$LIB_DIR/diff.sh"
 . "$LIB_DIR/parallel.sh"
+. "$LIB_DIR/optimize.sh"
 
 main() {
   nl_env_init
   nl_version_init
+  nl_optimize_init
   # Store original args for watch mode
   NL_ORIGINAL_ARGS=("$@")
   # parse flags first to allow --help/--version early exit
@@ -181,13 +186,25 @@ main() {
   # Call pre-format hook
   nl_hook_pre_format
 
-  # Generate output (JSON or text)
+  # Generate output based on format
   local output_result
-  if [[ "$NL_OUTPUT" == "json" ]]; then
-	output_result=$(nl_format_json "$filtered" "$stats")
-  else
-	output_result=$(nl_format_text "$filtered" "$stats" "$severity_stats")
-  fi
+  case "${NL_OUTPUT:-text}" in
+	json)
+		output_result=$(nl_format_json "$filtered" "$stats")
+		;;
+	html)
+		output_result=$(nl_format_html "$filtered" "$stats" "$severity_stats")
+		;;
+	junit)
+		output_result=$(nl_format_junit "$filtered" "$stats")
+		;;
+	sarif)
+		output_result=$(nl_format_sarif "$filtered" "$stats")
+		;;
+	*)
+		output_result=$(nl_format_text "$filtered" "$stats" "$severity_stats")
+		;;
+  esac
 
   # Handle diff mode
   if [[ -n "${NL_DIFF_BASELINE:-}" ]]; then

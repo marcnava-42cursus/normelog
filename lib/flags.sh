@@ -34,6 +34,8 @@ GENERAL OPTIONS:
   -v, --version            Show version and exit
   -a                       Show detailed per-file error listing
   --json                   Output results in JSON format
+  --html                   Output results as HTML report
+  --format <fmt>           Output format: text, json, html, junit, sarif
   --debug                  Enable debug logging to stderr
   -C <dir>, --chdir <dir>  Change working directory before running
 
@@ -132,6 +134,25 @@ nl_flags_parse() {
 			--json)
 				NL_OUTPUT=json
 				;;
+			--html)
+				NL_OUTPUT=html
+				;;
+			--format)
+				if [[ -z ${2:-} ]]; then
+					echo "Error: --format requires a format type (text, json, html, junit, sarif)" >&2
+					exit 1
+				fi
+				case "$2" in
+					text|json|html|junit|sarif)
+						NL_OUTPUT="$2"
+						;;
+					*)
+						echo "Error: Invalid format '$2'. Valid formats: text, json, html, junit, sarif" >&2
+						exit 1
+						;;
+				esac
+				shift
+				;;
 			--debug)
 				NL_DEBUG=1
 				;;
@@ -212,26 +233,56 @@ nl_flags_parse() {
 			fi
 			;;
 			-d*)
+				local dir
 				if [[ ${#1} -gt 2 ]]; then
-					NL_DIRS+=("${1#-d}");
+					dir="${1#-d}"
 				else
-					NL_DIRS+=("$2");
-					shift;
+					if [[ -z ${2:-} ]]; then
+						echo "Error: -d requires a directory" >&2
+						exit 1
+					fi
+					dir="$2"
+					shift
 				fi
+				if [[ ! -d "$dir" ]]; then
+					echo "Error: Directory does not exist: $dir" >&2
+					exit 1
+				fi
+				NL_DIRS+=("$dir")
 				;;
 			--directory=*)
-				NL_DIRS+=("${1#--directory=}")
+				local dir="${1#--directory=}"
+				if [[ ! -d "$dir" ]]; then
+					echo "Error: Directory does not exist: $dir" >&2
+					exit 1
+				fi
+				NL_DIRS+=("$dir")
 				;;
 			-n*)
+				local dir
 				if [[ ${#1} -gt 2 ]]; then
-					NL_EXCLUDE_DIRS+=("${1#-n}");
+					dir="${1#-n}"
 				else
-					NL_EXCLUDE_DIRS+=("$2");
-					shift;
+					if [[ -z ${2:-} ]]; then
+						echo "Error: -n requires a directory" >&2
+						exit 1
+					fi
+					dir="$2"
+					shift
 				fi
+				if [[ ! -d "$dir" ]]; then
+					echo "Error: Directory does not exist: $dir" >&2
+					exit 1
+				fi
+				NL_EXCLUDE_DIRS+=("$dir")
 				;;
 			--no-directory=*)
-				NL_EXCLUDE_DIRS+=("${1#--no-directory=}")
+				local dir="${1#--no-directory=}"
+				if [[ ! -d "$dir" ]]; then
+					echo "Error: Directory does not exist: $dir" >&2
+					exit 1
+				fi
+				NL_EXCLUDE_DIRS+=("$dir")
 				;;
 			-*)
 				NL_EXCLUDE_TYPES+=("${1#-}")
