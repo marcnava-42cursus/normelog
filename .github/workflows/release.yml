@@ -20,7 +20,13 @@ jobs:
           mkdir -p dist/normelog
 
           cp -r bin lib share plugins.d scripts dist/normelog/
-          cp README.md CHANGELOG.md TODO.md LICENSE Makefile CLAUDE.md ERRORS.md FIXED.md PHASE4_IMPLEMENTATION.md dist/normelog/
+          cp LICENSE Makefile README.md CHANGELOG.md dist/normelog/
+          # Optional docs (may not exist in all branches)
+          for f in TODO.md CLAUDE.md ERRORS.md FIXED.md PHASE4_IMPLEMENTATION.md; do
+            if [ -f "$f" ]; then
+              cp "$f" dist/normelog/
+            fi
+          done
 
           tar -czf "dist/normelog-${tag}.tar.gz" -C dist normelog
 

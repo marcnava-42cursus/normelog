@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-NL_VERSION="0.6.0"
+NL_VERSION="0.6.1"
 nl_version_init() { :; }
 
 # Compare two semantic versions (X.Y.Z).

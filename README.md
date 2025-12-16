@@ -67,10 +67,13 @@ A powerful, portable bash-based analyzer and filter for `norminette` with intell
 git clone https://github.com/marcnava-42cursus/normelog.git
 cd normelog
 
-# Install to /usr/local (requires sudo)
+# Install (uses /usr/local if writable; otherwise installs to ~/.local)
 make install
 
-# Or install to a custom location
+# Force a system-wide install to /usr/local
+sudo make install PREFIX=/usr/local
+
+# Or install to a custom location (recommended if you don't want sudo)
 make install PREFIX=$HOME/.local
 
 # Update man page database
@@ -80,8 +83,10 @@ make man-install
 This installs:
 - Binary to `$PREFIX/bin/normelog`
 - Man page to `$PREFIX/share/man/man1/normelog.1`
-- Bash completion to `/etc/bash_completion.d/normelog`
-- Zsh completion to `/usr/share/zsh/site-functions/_normelog`
+- Bash completion to `/etc/bash_completion.d/normelog` (if writable)
+- Zsh completion to `/usr/share/zsh/site-functions/_normelog` (if writable)
+
+If you install to `~/.local`, make sure `~/.local/bin` is in your `PATH`.
 
 ### Manual Installation
 
@@ -732,7 +737,10 @@ Run 'normelog --update' to upgrade
 To check for and install updates immediately:
 
 ```bash
-# Check and install latest version
+# User install (e.g. ~/.local)
+normelog --update
+
+# System-wide install (e.g. /usr/local)
 sudo normelog --update
 
 # Or with custom prefix
@@ -889,7 +897,7 @@ normelog --debug 2> debug.log
 
 ### Bash
 
-Completions are automatically installed to `/etc/bash_completion.d/` during `make install`.
+Completions are installed during `make install` if `/etc/bash_completion.d/` is writable (otherwise they are skipped).
 
 Manual installation:
 
@@ -907,7 +915,7 @@ source ~/.bashrc
 
 ### Zsh
 
-Completions are installed to `/usr/share/zsh/site-functions/` during `make install`.
+Completions are installed during `make install` if `/usr/share/zsh/site-functions/` is writable (otherwise they are skipped).
 
 Manual installation:
 

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.1] - 2025-12-16
+
+### 🐛 Fixed
+
+- **Installation Prefix**: `make install` now defaults to `~/.local` when `/usr/local` isn't writable (avoids permission errors for non-root installs).
+- **Shell Completions**: `make install` now skips Bash/Zsh completion installation when the target directories aren't writable (no false "installed" messages).
+- **Auto-Update Robustness**: `normelog --update` now prefers a writable prefix, checks write permissions up-front, and avoids silent exits when GitHub API responses are missing expected fields.
+
 ## [0.6.0] - 2025-12-15
 
 ### 🎨 Phase 5 Release - Polish & Reliability

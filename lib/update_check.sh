@@ -44,11 +44,14 @@ nl_update_check() {
     return 0
   fi
 
-  # Fetch with timeout and error handling
-  latest=$(curl -sL --max-time 5 "$api_url" 2>/dev/null | \
-    grep '"tag_name"' | \
-    sed -E 's/.*"tag_name"[[:space:]]*:[[:space:]]*"v?([^"]+)".*/\1/' | \
-    head -n1)
+  # Fetch with timeout and error handling (never fail the main command)
+  local release_info
+  release_info="$(curl -sL --max-time 5 "$api_url" 2>/dev/null || true)"
+  latest="$(
+    printf '%s\n' "$release_info" | \
+      sed -nE 's/.*"tag_name"[[:space:]]*:[[:space:]]*"v?([^"]+)".*/\1/p' | \
+      head -n1
+  )"
 
   # Check if we got a valid response
   if [[ -z "$latest" ]]; then
@@ -61,8 +64,9 @@ nl_update_check() {
   local current="${NL_VERSION#v}"
 
   # Compare versions (semver)
-  nl_version_compare "$latest" "$current"
-  case $? in
+  local cmp=0
+  nl_version_compare "$latest" "$current" || cmp=$?
+  case $cmp in
     0)
       nl_log_debug "normelog is up to date (v$current)"
       ;;

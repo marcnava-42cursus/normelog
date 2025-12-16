@@ -1,6 +1,16 @@
 .PHONY: lint test man release install uninstall man-install
 
-PREFIX ?= /usr/local
+# Default install prefix:
+# - root: /usr/local
+# - user: /usr/local if writable, otherwise ~/.local
+PREFIX ?= $(shell \
+  if [ "$$(id -u)" -eq 0 ]; then \
+    echo /usr/local; \
+  elif [ -w /usr/local ] || [ -w /usr/local/bin ] || [ -w /usr/local/lib ]; then \
+    echo /usr/local; \
+  else \
+    echo "$$HOME/.local"; \
+  fi)
 BINDIR ?= $(PREFIX)/bin
 LIBDIR ?= $(PREFIX)/lib/normelog
 MANDIR ?= $(PREFIX)/share/man/man1
@@ -27,22 +37,31 @@ install:
 	install -d "$(MANDIR)"
 	install -m 0644 share/man/normelog.1 "$(MANDIR)/normelog.1"
 	@if [ -n "$(BASHCOMP_DIR)" ]; then \
-	  if install -d "$(BASHCOMP_DIR)" >/dev/null 2>&1; then \
-		install -m 0644 share/completion/normelog.bash "$(BASHCOMP_DIR)/normelog"; \
-		echo "installed bash completion to $(BASHCOMP_DIR)"; \
+	  if [ ! -d "$(BASHCOMP_DIR)" ]; then install -d "$(BASHCOMP_DIR)" >/dev/null 2>&1 || true; fi; \
+	  if [ -d "$(BASHCOMP_DIR)" ] && [ -w "$(BASHCOMP_DIR)" ] && [ -x "$(BASHCOMP_DIR)" ]; then \
+		if install -m 0644 share/completion/normelog.bash "$(BASHCOMP_DIR)/normelog" >/dev/null 2>&1; then \
+		  echo "installed bash completion to $(BASHCOMP_DIR)"; \
+		else \
+		  echo "skip bash completion (cannot install to $(BASHCOMP_DIR))"; \
+		fi; \
 	  else \
 		echo "skip bash completion (cannot write to $(BASHCOMP_DIR))"; \
 	  fi; \
 	fi
 	@if [ -n "$(ZSHCOMP_DIR)" ]; then \
-	  if install -d "$(ZSHCOMP_DIR)" >/dev/null 2>&1; then \
-		install -m 0644 share/completion/_normelog.zsh "$(ZSHCOMP_DIR)/_normelog"; \
-		echo "installed zsh completion to $(ZSHCOMP_DIR)"; \
+	  if [ ! -d "$(ZSHCOMP_DIR)" ]; then install -d "$(ZSHCOMP_DIR)" >/dev/null 2>&1 || true; fi; \
+	  if [ -d "$(ZSHCOMP_DIR)" ] && [ -w "$(ZSHCOMP_DIR)" ] && [ -x "$(ZSHCOMP_DIR)" ]; then \
+		if install -m 0644 share/completion/_normelog.zsh "$(ZSHCOMP_DIR)/_normelog" >/dev/null 2>&1; then \
+		  echo "installed zsh completion to $(ZSHCOMP_DIR)"; \
+		else \
+		  echo "skip zsh completion (cannot install to $(ZSHCOMP_DIR))"; \
+		fi; \
 	  else \
 		echo "skip zsh completion (cannot write to $(ZSHCOMP_DIR))"; \
 	  fi; \
 	fi
 	@echo "installed $(BINDIR)/normelog"
+	@case ":$$PATH:" in *:"$(BINDIR)":*) ;; *) echo "note: add $(BINDIR) to your PATH to use 'normelog'";; esac
 
 uninstall:
 	@rm -f "$(BINDIR)/normelog"
