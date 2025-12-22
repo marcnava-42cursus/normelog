@@ -21,6 +21,7 @@ _normelog() {
 		--since
 		--branch
 		--severity
+		--severity-only
 		--max-errors
 		--profile
 		--diff
@@ -36,7 +37,7 @@ _normelog() {
 			COMPREPLY=($(compgen -W "text json html junit sarif" -- "$cur"))
 			return 0
 			;;
-		--severity)
+		--severity|--severity-only)
 			COMPREPLY=($(compgen -W "INFO WARNING CRITICAL" -- "$cur"))
 			return 0
 			;;

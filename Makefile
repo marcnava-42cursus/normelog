@@ -14,8 +14,19 @@ PREFIX ?= $(shell \
 BINDIR ?= $(PREFIX)/bin
 LIBDIR ?= $(PREFIX)/lib/normelog
 MANDIR ?= $(PREFIX)/share/man/man1
-BASHCOMP_DIR ?= /etc/bash_completion.d
-ZSHCOMP_DIR ?= /usr/share/zsh/site-functions
+
+# Detect if we are installing system-wide or user-local
+ifeq ($(PREFIX),/usr/local)
+  BASHCOMP_DIR ?= /etc/bash_completion.d
+  ZSHCOMP_DIR ?= /usr/share/zsh/site-functions
+else ifeq ($(PREFIX),/usr)
+  BASHCOMP_DIR ?= /etc/bash_completion.d
+  ZSHCOMP_DIR ?= /usr/share/zsh/site-functions
+else
+  # User-local install
+  BASHCOMP_DIR ?= $(PREFIX)/share/bash-completion/completions
+  ZSHCOMP_DIR ?= $(PREFIX)/share/zsh/site-functions
+endif
 
 lint:
 	./scripts/lint.sh

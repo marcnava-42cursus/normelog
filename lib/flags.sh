@@ -51,6 +51,7 @@ GIT INTEGRATION:
 
 QUALITY CONTROL:
   --severity <level>       Filter by minimum severity: CRITICAL, WARNING, INFO
+  --severity-only <level>  Filter by exact severity: CRITICAL, WARNING, INFO
   --max-errors <n>         Exit with error if total errors exceeds n
   --profile <name>         Load configuration profile (strict, dev, ci, etc.)
 
@@ -192,6 +193,14 @@ nl_flags_parse() {
 				NL_MIN_SEVERITY="$2"
 				shift
 				;;
+			--severity-only)
+				if [[ -z ${2:-} ]]; then
+					echo "Error: --severity-only requires a level (CRITICAL, WARNING, INFO)" >&2
+					exit 1
+				fi
+				NL_ONLY_SEVERITY="$2"
+				shift
+				;;
 			--max-errors)
 				if [[ -z ${2:-} ]]; then
 					echo "Error: --max-errors requires a number" >&2
@@ -283,6 +292,10 @@ nl_flags_parse() {
 					exit 1
 				fi
 				NL_EXCLUDE_DIRS+=("$dir")
+				;;
+			--*)
+				echo "Error: Unknown option '$1'" >&2
+				exit 1
 				;;
 			-*)
 				NL_EXCLUDE_TYPES+=("${1#-}")

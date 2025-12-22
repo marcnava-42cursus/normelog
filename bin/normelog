@@ -172,8 +172,12 @@ main() {
   filtered=$(nl_filter_errors <<<"$records")
 
   # Apply severity filtering if requested
-  if [[ -n "${NL_MIN_SEVERITY:-}" ]]; then
-	nl_log_debug "Filtering by severity level: ${NL_MIN_SEVERITY}..."
+  if [[ -n "${NL_MIN_SEVERITY:-}" ]] || [[ -n "${NL_ONLY_SEVERITY:-}" ]]; then
+	if [[ -n "${NL_ONLY_SEVERITY:-}" ]]; then
+		nl_log_debug "Filtering by exact severity: ${NL_ONLY_SEVERITY}..."
+	else
+		nl_log_debug "Filtering by minimum severity: ${NL_MIN_SEVERITY}..."
+	fi
 	filtered=$(nl_severity_filter <<<"$filtered")
   fi
 

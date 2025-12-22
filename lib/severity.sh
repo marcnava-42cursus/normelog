@@ -12,28 +12,29 @@ declare -A NL_SEVERITY_CRITICAL=(
 	[FORBIDDEN_VAR_NAME]=1
 	[FORBIDDEN_TYPE_NAME]=1
 	[FORBIDDEN_MACRO_NAME]=1
-	[TOO_MANY_FUNCS]=1
+	[ASSIGN_IN_CONTROL]=1
 	[TOO_MANY_LINES]=1
 	[TOO_MANY_ARGS]=1
-	[BRACE_NEWLINE]=1
 )
 
 # WARNING: Code quality, style violations
 declare -A NL_SEVERITY_WARNING=(
-	[SPACE_BEFORE_TAB]=1
-	[SPACE_REPLACE_TAB]=1
-	[TAB_REPLACE_SPACE]=1
 	[LINE_TOO_LONG]=1
 	[WRONG_SCOPE]=1
 	[WRONG_SCOPE_VAR]=1
 	[WRONG_SCOPE_COMMENT]=1
 	[MULT_DECL]=1
 	[DECL_ASSIGN_LINE]=1
-	[ASSIGN_IN_CONTROL]=1
+	[TOO_MANY_FUNCS]=1
+	[BRACE_NEWLINE]=1
+	[INVALID_HEADER]=1
 )
 
 # INFO: Minor formatting issues
 declare -A NL_SEVERITY_INFO=(
+	[SPACE_BEFORE_TAB]=1
+	[SPACE_REPLACE_TAB]=1
+	[TAB_REPLACE_SPACE]=1
 	[EMPTY_LINE_FUNCTION]=1
 	[EMPTY_LINE_FILE]=1
 	[CONSECUTIVE_NEWLINES]=1
@@ -62,30 +63,43 @@ nl_severity_get() {
 # Filter errors by severity level
 nl_severity_filter() {
 	local min_severity="${NL_MIN_SEVERITY:-INFO}"
+	local only_severity="${NL_ONLY_SEVERITY:-}"
 
 	# Severity order: INFO < WARNING < CRITICAL
 	local include_info=0
 	local include_warning=0
 	local include_critical=0
 
-	case "$min_severity" in
-		INFO)
-			include_info=1
-			include_warning=1
-			include_critical=1
-			;;
-		WARNING)
-			include_warning=1
-			include_critical=1
-			;;
-		CRITICAL)
-			include_critical=1
-			;;
-		*)
-			nl_log_error "Invalid severity level: $min_severity"
-			return 1
-			;;
-	esac
+	if [[ -n "$only_severity" ]]; then
+		case "$only_severity" in
+			INFO) include_info=1 ;;
+			WARNING) include_warning=1 ;;
+			CRITICAL) include_critical=1 ;;
+			*)
+				nl_log_error "Invalid severity level: $only_severity"
+				return 1
+				;;
+		esac
+	else
+		case "$min_severity" in
+			INFO)
+				include_info=1
+				include_warning=1
+				include_critical=1
+				;;
+			WARNING)
+				include_warning=1
+				include_critical=1
+				;;
+			CRITICAL)
+				include_critical=1
+				;;
+			*)
+				nl_log_error "Invalid severity level: $min_severity"
+				return 1
+				;;
+		esac
+	fi
 
 	awk -v inc_info="$include_info" \
 	    -v inc_warn="$include_warning" \
@@ -99,24 +113,25 @@ nl_severity_filter() {
 		crit["FORBIDDEN_VAR_NAME"] = 1
 		crit["FORBIDDEN_TYPE_NAME"] = 1
 		crit["FORBIDDEN_MACRO_NAME"] = 1
-		crit["TOO_MANY_FUNCS"] = 1
+		crit["ASSIGN_IN_CONTROL"] = 1
 		crit["TOO_MANY_LINES"] = 1
 		crit["TOO_MANY_ARGS"] = 1
-		crit["BRACE_NEWLINE"] = 1
 
 		# WARNING
-		warn["SPACE_BEFORE_TAB"] = 1
-		warn["SPACE_REPLACE_TAB"] = 1
-		warn["TAB_REPLACE_SPACE"] = 1
 		warn["LINE_TOO_LONG"] = 1
 		warn["WRONG_SCOPE"] = 1
 		warn["WRONG_SCOPE_VAR"] = 1
 		warn["WRONG_SCOPE_COMMENT"] = 1
 		warn["MULT_DECL"] = 1
 		warn["DECL_ASSIGN_LINE"] = 1
-		warn["ASSIGN_IN_CONTROL"] = 1
+		warn["TOO_MANY_FUNCS"] = 1
+		warn["BRACE_NEWLINE"] = 1
+		warn["INVALID_HEADER"] = 1
 
 		# INFO
+		info["SPACE_BEFORE_TAB"] = 1
+		info["SPACE_REPLACE_TAB"] = 1
+		info["TAB_REPLACE_SPACE"] = 1
 		info["EMPTY_LINE_FUNCTION"] = 1
 		info["EMPTY_LINE_FILE"] = 1
 		info["CONSECUTIVE_NEWLINES"] = 1
@@ -167,24 +182,25 @@ nl_severity_stats() {
 		crit["FORBIDDEN_VAR_NAME"] = 1
 		crit["FORBIDDEN_TYPE_NAME"] = 1
 		crit["FORBIDDEN_MACRO_NAME"] = 1
-		crit["TOO_MANY_FUNCS"] = 1
+		crit["ASSIGN_IN_CONTROL"] = 1
 		crit["TOO_MANY_LINES"] = 1
 		crit["TOO_MANY_ARGS"] = 1
-		crit["BRACE_NEWLINE"] = 1
 
 		# WARNING
-		warn["SPACE_BEFORE_TAB"] = 1
-		warn["SPACE_REPLACE_TAB"] = 1
-		warn["TAB_REPLACE_SPACE"] = 1
 		warn["LINE_TOO_LONG"] = 1
 		warn["WRONG_SCOPE"] = 1
 		warn["WRONG_SCOPE_VAR"] = 1
 		warn["WRONG_SCOPE_COMMENT"] = 1
 		warn["MULT_DECL"] = 1
 		warn["DECL_ASSIGN_LINE"] = 1
-		warn["ASSIGN_IN_CONTROL"] = 1
+		warn["TOO_MANY_FUNCS"] = 1
+		warn["BRACE_NEWLINE"] = 1
+		warn["INVALID_HEADER"] = 1
 
 		# INFO
+		info_map["SPACE_BEFORE_TAB"] = 1
+		info_map["SPACE_REPLACE_TAB"] = 1
+		info_map["TAB_REPLACE_SPACE"] = 1
 		info_map["EMPTY_LINE_FUNCTION"] = 1
 		info_map["EMPTY_LINE_FILE"] = 1
 		info_map["CONSECUTIVE_NEWLINES"] = 1

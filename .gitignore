@@ -1,3 +1,8 @@
+*.md
+
+!README.md
+!CHANGELOG.md
+
 # Build/package artifacts
 *.tar.gz
 *.dsc
@@ -11,4 +16,3 @@
 .idea/
 *.swp
 *.swo
-

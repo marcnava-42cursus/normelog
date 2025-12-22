@@ -17,6 +17,7 @@ _normelog() {
 		'--since[Check files changed since git ref]:ref:' \
 		'--branch[Check files in current branch vs base]:ref:' \
 		'--severity[Filter by minimum severity]:level:(INFO WARNING CRITICAL)' \
+		'--severity-only[Filter by exact severity]:level:(INFO WARNING CRITICAL)' \
 		'--max-errors[Exit with error if total errors exceeds n]:number:' \
 		'--profile[Load configuration profile]:profile:' \
 		'--diff[Compare with baseline JSON file]:file:_files' \
