@@ -1,6 +1,6 @@
 # normelog
 
-[![Version](https://img.shields.io/github/v/release/marcnava-42cursus/normelog?sort=semver)](https://github.com/marcnava-42cursus/normelog/releases)
+[![Version](https://img.shields.io/github/v/release/marcnava-42cursus/normelog?sort=semver)](https://github.com/marcnava-42cursus/normelog/releases/tag/v0.7.0)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A powerful, portable bash-based analyzer and filter for `norminette` with intelligent filtering, statistics tracking, and multiple output formats. Designed for 42 School students working with C projects.
@@ -42,6 +42,7 @@ A powerful, portable bash-based analyzer and filter for `norminette` with intell
 - **Git Integration**: Check only changed files with `--staged`, `--since`, or `--branch` flags
 - **Watch Mode**: Continuously monitor files and re-run on changes (perfect for development)
 - **Severity Levels**: Classify and filter errors by CRITICAL, WARNING, or INFO severity
+- **Exact Severity Filter**: Show only specific severity levels with `--severity-only`
 - **Error Thresholds**: Set maximum error limits for CI/CD pipelines with `--max-errors`
 - **Modular Architecture**: Clean, maintainable bash codebase with separated concerns
 - **Shell Completions**: Bash and Zsh completion support out of the box
@@ -202,6 +203,7 @@ When run without arguments, `normelog`:
 | Flag | Description |
 |------|-------------|
 | `--severity <level>` | Filter by minimum severity: CRITICAL, WARNING, or INFO (default: INFO) |
+| `--severity-only <level>` | Filter by exact severity (e.g., only INFO) |
 | `--max-errors <n>` | Exit with error if total error count exceeds n (useful for CI/CD) |
 | `--profile <name>` | Load a configuration profile (e.g., `strict`, `dev`, `ci`) |
 
@@ -293,27 +295,68 @@ done
 
 #### Text Output (Default)
 
-The text format provides:
 
-1. **Summary Line**: Correct files / Incorrect files (color-coded)
-2. **Error Type Counts**: Aggregated counts per error type
-3. **Detailed Listing**: Per-file errors with line, column, and message
+
+The text format provides a clean, grouped view of errors:
+
+
+
+1.  **Global Summary**: Total files processed and counts for correct/incorrect files.
+
+2.  **Severity Breakdown**: Total error count broken down by Critical/Warning/Info.
+
+3.  **Error Type Counts**: Aggregated counts per error type (color-coded by severity).
+
+4.  **Detailed Listing**: Errors grouped by file header to reduce noise.
+
+
 
 ```
-Correct files: 42
-Incorrect files: 8
+
+Files: 50
+
+--------------------
+
+Correct:   42
+
+Incorrect: 8
+
+
+
+Errors: 22
+
+--------------------
+
+Critical: 5
+
+Warning:  12
+
+Info:     5
+
+
 
 Error type count:
+
 --------------------
+
 SPACE_BEFORE_TAB         : 3
+
 INVALID_HEADER           : 5
+
 TOO_MANY_FUNCS           : 2
+
 LINE_TOO_LONG            : 12
 
+
+
 src/main.c
+
     INVALID_HEADER (line:   1, col:   1): Missing or invalid header
+
     LINE_TOO_LONG (line:  42, col:  81): Line exceeds 80 characters
+
 ...
+
 ```
 
 #### JSON Output
@@ -728,7 +771,7 @@ By default, normelog checks for updates once every 24 hours and notifies you if 
 ```bash
 $ normelog
 # ... normal output ...
-New version available: v0.3.0 (current: v0.2.0)
+New version available: v0.8.0 (current: v0.7.0)
 Run 'normelog --update' to upgrade
 ```
 
