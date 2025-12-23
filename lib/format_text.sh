@@ -38,7 +38,19 @@ nl_format_text() {
 
 	echo "Error type count:"
 	echo "--------------------"
-	echo "$stats" | awk -v red="$red" -v yellow="$yellow" -v cyan="$cyan" -v reset="$reset" '
+
+	local type_stats
+	type_stats=$(echo "$stats" | grep "^TYPE") || true
+
+	if [[ -n "${NL_ORDER:-}" ]]; then
+		if [[ "$NL_ORDER" == "asc" ]]; then
+			type_stats=$(echo "$type_stats" | sort -k3,3n -k2,2)
+		elif [[ "$NL_ORDER" == "desc" ]]; then
+			type_stats=$(echo "$type_stats" | sort -k3,3nr -k2,2)
+		fi
+	fi
+
+	echo "$type_stats" | awk -v red="$red" -v yellow="$yellow" -v cyan="$cyan" -v reset="$reset" '
 		BEGIN {
 			# Initialize severity maps (sync with lib/severity.sh)
 			crit["FORBIDDEN_CS"] = 1; crit["FORBIDDEN_CHAR_NAME"] = 1

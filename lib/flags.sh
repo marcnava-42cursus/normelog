@@ -22,6 +22,7 @@ NL_SAVE_BASELINE=""
 NL_PROFILE=""
 NL_PARALLEL=0
 NL_PARALLEL_JOBS=4
+NL_ORDER=""
 
 nl_flags_help() {
 cat <<'HLP'
@@ -36,6 +37,7 @@ GENERAL OPTIONS:
   --json                   Output results in JSON format
   --html                   Output results as HTML report
   --format <fmt>           Output format: text, json, html, junit, sarif
+  --order <dir>            Sort error types by count: asc, desc
   --debug                  Enable debug logging to stderr
   -C <dir>, --chdir <dir>  Change working directory before running
 
@@ -149,6 +151,22 @@ nl_flags_parse() {
 						;;
 					*)
 						echo "Error: Invalid format '$2'. Valid formats: text, json, html, junit, sarif" >&2
+						exit 1
+						;;
+				esac
+				shift
+				;;
+			--order)
+				if [[ -z ${2:-} ]]; then
+					echo "Error: --order requires a sort direction (asc, desc)" >&2
+					exit 1
+				fi
+				case "$2" in
+					asc|desc)
+						NL_ORDER="$2"
+						;;
+					*)
+						echo "Error: Invalid order '$2'. Valid values: asc, desc" >&2
 						exit 1
 						;;
 				esac

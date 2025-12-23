@@ -55,3 +55,18 @@ setup() {
   run "$NORMELOG" -SPACE_TAB --version
   [ "$status" -eq 0 ]
 }
+
+@test "normelog accepts --order flag with asc" {
+  run "$NORMELOG" --order asc --version
+  [ "$status" -eq 0 ]
+}
+
+@test "normelog accepts --order flag with desc" {
+  run "$NORMELOG" --order desc --version
+  [ "$status" -eq 0 ]
+}
+
+@test "normelog fails with invalid --order value" {
+  run "$NORMELOG" --order invalid --version
+  [ "$status" -eq 1 ]
+}

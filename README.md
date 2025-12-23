@@ -1,6 +1,6 @@
 # normelog
 
-[![Version](https://img.shields.io/github/v/release/marcnava-42cursus/normelog?sort=semver)](https://github.com/marcnava-42cursus/normelog/releases/tag/v0.7.0)
+[![Version](https://img.shields.io/github/v/release/marcnava-42cursus/normelog?sort=semver)](https://github.com/marcnava-42cursus/normelog/releases/tag/v0.7.1)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A powerful, portable bash-based analyzer and filter for `norminette` with intelligent filtering, statistics tracking, and multiple output formats. Designed for 42 School students working with C projects.
@@ -159,6 +159,7 @@ When run without arguments, `normelog`:
 | `-v` | `--version` | Show version information and exit |
 | `-a` | - | Show detailed per-file error listing |
 | `--debug` | - | Enable debug output to stderr |
+| `--order` | - | Sort error types by count: `asc` or `desc` |
 
 #### Directory Options
 

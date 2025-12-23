@@ -8,6 +8,7 @@ _normelog() {
 		'--json[Output results in JSON format]' \
 		'--html[Output results as HTML report]' \
 		'--format[Output format]:format:(text json html junit sarif)' \
+		'--order[Sort error types by count]:order:(asc desc)' \
 		'--debug[Enable debug logging to stderr]' \
 		'(-C --chdir)'{-C,--chdir}'[Change working directory before running]:directory:_files -/' \
 		'-d[Analyze only specified directory (repeatable)]:directory:_files -/' \

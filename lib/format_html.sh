@@ -310,8 +310,18 @@ HTML_NO_ERRORS
 				<div class="error-types">
 HTML_ERROR_TYPES_START
 
-		# Extract error type counts from stats
-		echo "$stats" | awk '
+		# Extract error type counts from stats and apply ordering if requested
+		local type_stats
+		type_stats=$(echo "$stats" | grep "^TYPE") || true
+		if [[ -n "${NL_ORDER:-}" ]]; then
+			if [[ "$NL_ORDER" == "asc" ]]; then
+				type_stats=$(echo "$type_stats" | sort -k3,3n -k2,2)
+			elif [[ "$NL_ORDER" == "desc" ]]; then
+				type_stats=$(echo "$type_stats" | sort -k3,3nr -k2,2)
+			fi
+		fi
+
+		echo "$type_stats" | awk '
 			/^TYPE / {
 				type_name = $2
 				count = $3

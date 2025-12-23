@@ -36,7 +36,7 @@ setup() {
   input="sample.c
 Error: SPACE_TAB    (line:   5, col:   3):	space before tab
 Error: CONSECUTIVE_NEWLINES	(line:  11, col:   1):	consecutive newlines
-sample.c: KO!"
+sample.c: Error!"
   result=$(echo "$input" | nl_parse_output)
   [[ "$result" =~ "FILE sample.c STATUS ERR" ]]
   [[ "$result" =~ "ERR SPACE_TAB 5 3" ]]
@@ -47,7 +47,7 @@ sample.c: KO!"
   input="file1.c: OK!
 file2.c
 Error: SPACE_TAB    (line:   5, col:   3):	space before tab
-file2.c: KO!
+file2.c: Error!
 file3.c: OK!"
   result=$(echo "$input" | nl_parse_output)
   [[ "$result" =~ "FILE file1.c STATUS OK" ]]

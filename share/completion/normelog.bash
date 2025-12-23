@@ -12,6 +12,7 @@ _normelog() {
 		--json
 		--html
 		--format
+		--order
 		--debug
 		-C --chdir
 		-d
@@ -35,6 +36,10 @@ _normelog() {
 	case "$prev" in
 		--format)
 			COMPREPLY=($(compgen -W "text json html junit sarif" -- "$cur"))
+			return 0
+			;;
+		--order)
+			COMPREPLY=($(compgen -W "asc desc" -- "$cur"))
 			return 0
 			;;
 		--severity|--severity-only)

@@ -1,4 +1,4 @@
-.TH NORMELOG 1 "diciembre 2025" "0.7.0" "User Commands"
+.TH NORMELOG 1 "diciembre 2025" "0.7.1" "User Commands"
 .SH NAME
 normelog \- Analyzer and filter for norminette with statistics and multiple output formats
 .SH SYNOPSIS
@@ -50,6 +50,15 @@ Exclude directories from the results (repeatable).
 .TP
 .B \-\-json
 Emit JSON output.
+.TP
+.B \-\-html
+Emit HTML output.
+.TP
+.B \-\-format \fIFMT\fR
+Output format: text, json, html, junit, sarif.
+.TP
+.B \-\-order \fIDIR\fR
+Sort error types by count. Values: \fBasc\fR (ascending), \fBdesc\fR (descending).
 .TP
 .B \-\-debug
 Print debug messages to stderr.
