@@ -52,7 +52,7 @@ main() {
   # Store original args for watch mode
   NL_ORIGINAL_ARGS=("$@")
   # parse flags first to allow --help/--version early exit
-  nl_flags_parse "$@"
+  NL_PARSE_MODE="meta" nl_flags_parse "$@"
   # Early exits for meta flags before any other logic
   if [[ "${NL_SHOW_VERSION:-0}" -eq 1 ]]; then
 	echo "normelog ${NL_VERSION}"; exit 0
@@ -78,8 +78,20 @@ main() {
 	  fi
 	done
 	if [[ -n "$man_file" ]]; then
-	  if command -v nroff >/dev/null 2>&1; then
+	  if command -v man >/dev/null 2>&1; then
+		if ! MANPAGER=cat MANWIDTH="${MANWIDTH:-80}" man -l "$man_file"; then
+		  if command -v nroff >/dev/null 2>&1; then
+			nroff -man "$man_file" | sed -e 's/.\x08//g'
+		  elif command -v groff >/dev/null 2>&1; then
+			groff -man -Tutf8 "$man_file" | sed -e 's/.\x08//g'
+		  else
+			cat "$man_file"
+		  fi
+		fi
+	  elif command -v nroff >/dev/null 2>&1; then
 		nroff -man "$man_file" | sed -e 's/.\x08//g'
+	  elif command -v groff >/dev/null 2>&1; then
+		groff -man -Tutf8 "$man_file" | sed -e 's/.\x08//g'
 	  else
 		cat "$man_file"
 	  fi
@@ -96,6 +108,9 @@ main() {
 	fi
   fi
   nl_config_load "$@"
+
+  # Re-parse flags so they override config (e.g. NL_ORDER)
+  nl_flags_parse "$@"
 
   # Load plugins
   nl_plugins_load

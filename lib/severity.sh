@@ -15,6 +15,9 @@ declare -A NL_SEVERITY_CRITICAL=(
 	[ASSIGN_IN_CONTROL]=1
 	[TOO_MANY_LINES]=1
 	[TOO_MANY_ARGS]=1
+	[TERNARY_FBIDDEN]=1
+	[TOO_MANY_VARS_FUNC]=1
+	[TOO_MANY_FUNCS]=1
 )
 
 # WARNING: Code quality, style violations
@@ -22,10 +25,8 @@ declare -A NL_SEVERITY_WARNING=(
 	[LINE_TOO_LONG]=1
 	[WRONG_SCOPE]=1
 	[WRONG_SCOPE_VAR]=1
-	[WRONG_SCOPE_COMMENT]=1
 	[MULT_DECL]=1
 	[DECL_ASSIGN_LINE]=1
-	[TOO_MANY_FUNCS]=1
 	[BRACE_NEWLINE]=1
 	[INVALID_HEADER]=1
 )
@@ -42,6 +43,23 @@ declare -A NL_SEVERITY_INFO=(
 	[TRAILING_WHITESPACE]=1
 	[NEWLINE_EOF]=1
 	[NO_ARGS_VOID]=1
+	[WRONG_SCOPE_COMMENT]=1
+	[MISSALIGNED_VAR_DECL]=1
+	[TOO_MANY_TAB]=1
+	[TOO_FEW_TAB]=1
+	[SPC_AFTER_OPERATOR]=1
+	[SPC_BFR_OPERATOR]=1
+	[SPACE_AFTER_KW]=1
+	[CONSECUTIVE_SPC]=1
+	[EOL_OPERATOR]=1
+	[TOO_MANY_WS]=1
+	[MIXED_SPACE_TAB]=1
+	[SPACE_BEFORE_FUNC]=1
+	[NO_SPC_AFR_PAR]=1
+	[NL_AFTER_PREPROC]=1
+	[SPACE_AFTER_POINTER]=1
+	[SPC_BEFORE_NL]=1
+	[TAB_INSTEAD_NL]=1
 )
 
 # Get severity level for an error type
@@ -116,15 +134,16 @@ nl_severity_filter() {
 		crit["ASSIGN_IN_CONTROL"] = 1
 		crit["TOO_MANY_LINES"] = 1
 		crit["TOO_MANY_ARGS"] = 1
+		crit["TERNARY_FBIDDEN"] = 1
+		crit["TOO_MANY_VARS_FUNC"] = 1
+		crit["TOO_MANY_FUNCS"] = 1
 
 		# WARNING
 		warn["LINE_TOO_LONG"] = 1
 		warn["WRONG_SCOPE"] = 1
 		warn["WRONG_SCOPE_VAR"] = 1
-		warn["WRONG_SCOPE_COMMENT"] = 1
 		warn["MULT_DECL"] = 1
 		warn["DECL_ASSIGN_LINE"] = 1
-		warn["TOO_MANY_FUNCS"] = 1
 		warn["BRACE_NEWLINE"] = 1
 		warn["INVALID_HEADER"] = 1
 
@@ -139,6 +158,23 @@ nl_severity_filter() {
 		info["TRAILING_WHITESPACE"] = 1
 		info["NEWLINE_EOF"] = 1
 		info["NO_ARGS_VOID"] = 1
+		info["WRONG_SCOPE_COMMENT"] = 1
+		info["MISSALIGNED_VAR_DECL"] = 1
+		info["TOO_MANY_TAB"] = 1
+		info["TOO_FEW_TAB"] = 1
+		info["SPC_AFTER_OPERATOR"] = 1
+		info["SPC_BFR_OPERATOR"] = 1
+		info["SPACE_AFTER_KW"] = 1
+		info["CONSECUTIVE_SPC"] = 1
+		info["EOL_OPERATOR"] = 1
+		info["TOO_MANY_WS"] = 1
+		info["MIXED_SPACE_TAB"] = 1
+		info["SPACE_BEFORE_FUNC"] = 1
+		info["NO_SPC_AFR_PAR"] = 1
+		info["NL_AFTER_PREPROC"] = 1
+		info["SPACE_AFTER_POINTER"] = 1
+		info["SPC_BEFORE_NL"] = 1
+		info["TAB_INSTEAD_NL"] = 1
 	}
 
 	# Always pass FILE records
@@ -185,15 +221,16 @@ nl_severity_stats() {
 		crit["ASSIGN_IN_CONTROL"] = 1
 		crit["TOO_MANY_LINES"] = 1
 		crit["TOO_MANY_ARGS"] = 1
+		crit["TERNARY_FBIDDEN"] = 1
+		crit["TOO_MANY_VARS_FUNC"] = 1
+		crit["TOO_MANY_FUNCS"] = 1
 
 		# WARNING
 		warn["LINE_TOO_LONG"] = 1
 		warn["WRONG_SCOPE"] = 1
 		warn["WRONG_SCOPE_VAR"] = 1
-		warn["WRONG_SCOPE_COMMENT"] = 1
 		warn["MULT_DECL"] = 1
 		warn["DECL_ASSIGN_LINE"] = 1
-		warn["TOO_MANY_FUNCS"] = 1
 		warn["BRACE_NEWLINE"] = 1
 		warn["INVALID_HEADER"] = 1
 
@@ -208,6 +245,23 @@ nl_severity_stats() {
 		info_map["TRAILING_WHITESPACE"] = 1
 		info_map["NEWLINE_EOF"] = 1
 		info_map["NO_ARGS_VOID"] = 1
+		info_map["WRONG_SCOPE_COMMENT"] = 1
+		info_map["MISSALIGNED_VAR_DECL"] = 1
+		info_map["TOO_MANY_TAB"] = 1
+		info_map["TOO_FEW_TAB"] = 1
+		info_map["SPC_AFTER_OPERATOR"] = 1
+		info_map["SPC_BFR_OPERATOR"] = 1
+		info_map["SPACE_AFTER_KW"] = 1
+		info_map["CONSECUTIVE_SPC"] = 1
+		info_map["EOL_OPERATOR"] = 1
+		info_map["TOO_MANY_WS"] = 1
+		info_map["MIXED_SPACE_TAB"] = 1
+		info_map["SPACE_BEFORE_FUNC"] = 1
+		info_map["NO_SPC_AFR_PAR"] = 1
+		info_map["NL_AFTER_PREPROC"] = 1
+		info_map["SPACE_AFTER_POINTER"] = 1
+		info_map["SPC_BEFORE_NL"] = 1
+		info_map["TAB_INSTEAD_NL"] = 1
 	}
 
 	/^ERR / {

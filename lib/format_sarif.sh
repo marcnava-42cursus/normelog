@@ -46,10 +46,10 @@ SARIF_HEADER
 		# Determine severity level
 		local level="warning"
 		case "$error_type" in
-			FORBIDDEN_*|TOO_MANY_FUNCS|TOO_MANY_LINES|INVALID_HEADER)
+			FORBIDDEN_*|ASSIGN_IN_CONTROL|TOO_MANY_LINES|TOO_MANY_ARGS|TERNARY_FBIDDEN|TOO_MANY_VARS_FUNC|TOO_MANY_FUNCS)
 				level="error"
 				;;
-			EMPTY_LINE_*|TRAILING_WHITESPACE|CONSECUTIVE_NEWLINES)
+			SPACE_BEFORE_TAB|SPACE_REPLACE_TAB|TAB_REPLACE_SPACE|EMPTY_LINE_*|CONSECUTIVE_NEWLINES|SPACE_EMPTY_LINE|TRAILING_WHITESPACE|NEWLINE_EOF|NO_ARGS_VOID|WRONG_SCOPE_COMMENT|MISSALIGNED_VAR_DECL|TOO_MANY_TAB|TOO_FEW_TAB|SPC_AFTER_OPERATOR|SPC_BFR_OPERATOR|SPACE_AFTER_KW|CONSECUTIVE_SPC|EOL_OPERATOR|TOO_MANY_WS|MIXED_SPACE_TAB|SPACE_BEFORE_FUNC|NO_SPC_AFR_PAR|NL_AFTER_PREPROC|SPACE_AFTER_POINTER|SPC_BEFORE_NL|TAB_INSTEAD_NL)
 				level="note"
 				;;
 		esac
@@ -118,9 +118,9 @@ SARIF_RULES_END
 
 			# Determine level based on error type
 			level = "warning"
-			if (match(type, /^FORBIDDEN_/) || type == "TOO_MANY_FUNCS" || type == "TOO_MANY_LINES" || type == "INVALID_HEADER") {
+			if (match(type, /^FORBIDDEN_/) || type == "ASSIGN_IN_CONTROL" || type == "TOO_MANY_LINES" || type == "TOO_MANY_ARGS" || type == "TERNARY_FBIDDEN" || type == "TOO_MANY_VARS_FUNC" || type == "TOO_MANY_FUNCS") {
 				level = "error"
-			} else if (match(type, /^EMPTY_LINE_/) || type == "TRAILING_WHITESPACE" || type == "CONSECUTIVE_NEWLINES") {
+			} else if (type == "SPACE_BEFORE_TAB" || type == "SPACE_REPLACE_TAB" || type == "TAB_REPLACE_SPACE" || match(type, /^EMPTY_LINE_/) || type == "CONSECUTIVE_NEWLINES" || type == "SPACE_EMPTY_LINE" || type == "TRAILING_WHITESPACE" || type == "NEWLINE_EOF" || type == "NO_ARGS_VOID" || type == "WRONG_SCOPE_COMMENT" || type == "MISSALIGNED_VAR_DECL" || type == "TOO_MANY_TAB" || type == "TOO_FEW_TAB" || type == "SPC_AFTER_OPERATOR" || type == "SPC_BFR_OPERATOR" || type == "SPACE_AFTER_KW" || type == "CONSECUTIVE_SPC" || type == "EOL_OPERATOR" || type == "TOO_MANY_WS" || type == "MIXED_SPACE_TAB" || type == "SPACE_BEFORE_FUNC" || type == "NO_SPC_AFR_PAR" || type == "NL_AFTER_PREPROC" || type == "SPACE_AFTER_POINTER" || type == "SPC_BEFORE_NL" || type == "TAB_INSTEAD_NL") {
 				level = "note"
 			}
 

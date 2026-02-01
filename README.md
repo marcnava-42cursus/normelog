@@ -1,6 +1,6 @@
 # normelog
 
-[![Version](https://img.shields.io/github/v/release/marcnava-42cursus/normelog?sort=semver)](https://github.com/marcnava-42cursus/normelog/releases/tag/v0.7.1)
+[![Version](https://img.shields.io/github/v/release/marcnava-42cursus/normelog?sort=semver)](https://github.com/marcnava-42cursus/normelog/releases/tag/v0.8.0)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A powerful, portable bash-based analyzer and filter for `norminette` with intelligent filtering, statistics tracking, and multiple output formats. Designed for 42 School students working with C projects.
@@ -88,6 +88,7 @@ This installs:
 - Zsh completion to `/usr/share/zsh/site-functions/_normelog` (if writable)
 
 If you install to `~/.local`, make sure `~/.local/bin` is in your `PATH`.
+If `man normelog` shows nothing, add `$PREFIX/share/man` to `MANPATH` (the `make install` step will now try to add it to `~/.manpath` for you).
 
 ### Manual Installation
 
@@ -772,7 +773,7 @@ By default, normelog checks for updates once every 24 hours and notifies you if 
 ```bash
 $ normelog
 # ... normal output ...
-New version available: v0.8.0 (current: v0.7.0)
+New version available: v0.8.1 (current: v0.8.0)
 Run 'normelog --update' to upgrade
 ```
 

@@ -58,11 +58,12 @@ nl_format_text() {
 			crit["FORBIDDEN_TYPE_NAME"] = 1; crit["FORBIDDEN_MACRO_NAME"] = 1
 			crit["ASSIGN_IN_CONTROL"] = 1; crit["TOO_MANY_LINES"] = 1
 			crit["TOO_MANY_ARGS"] = 1
+			crit["TERNARY_FBIDDEN"] = 1; crit["TOO_MANY_VARS_FUNC"] = 1
+			crit["TOO_MANY_FUNCS"] = 1
 
 			warn["LINE_TOO_LONG"] = 1
 			warn["WRONG_SCOPE"] = 1; warn["WRONG_SCOPE_VAR"] = 1
-			warn["WRONG_SCOPE_COMMENT"] = 1; warn["MULT_DECL"] = 1
-			warn["DECL_ASSIGN_LINE"] = 1; warn["TOO_MANY_FUNCS"] = 1
+			warn["MULT_DECL"] = 1; warn["DECL_ASSIGN_LINE"] = 1
 			warn["BRACE_NEWLINE"] = 1; warn["INVALID_HEADER"] = 1
 
 			info["SPACE_BEFORE_TAB"] = 1; info["SPACE_REPLACE_TAB"] = 1
@@ -70,6 +71,15 @@ nl_format_text() {
 			info["EMPTY_LINE_FILE"] = 1; info["CONSECUTIVE_NEWLINES"] = 1
 			info["SPACE_EMPTY_LINE"] = 1; info["TRAILING_WHITESPACE"] = 1
 			info["NEWLINE_EOF"] = 1; info["NO_ARGS_VOID"] = 1
+			info["WRONG_SCOPE_COMMENT"] = 1; info["MISSALIGNED_VAR_DECL"] = 1
+			info["TOO_MANY_TAB"] = 1; info["TOO_FEW_TAB"] = 1
+			info["SPC_AFTER_OPERATOR"] = 1; info["SPC_BFR_OPERATOR"] = 1
+			info["SPACE_AFTER_KW"] = 1; info["CONSECUTIVE_SPC"] = 1
+			info["EOL_OPERATOR"] = 1; info["TOO_MANY_WS"] = 1
+			info["MIXED_SPACE_TAB"] = 1; info["SPACE_BEFORE_FUNC"] = 1
+			info["NO_SPC_AFR_PAR"] = 1; info["NL_AFTER_PREPROC"] = 1
+			info["SPACE_AFTER_POINTER"] = 1; info["SPC_BEFORE_NL"] = 1
+			info["TAB_INSTEAD_NL"] = 1
 		}
 		/^TYPE /{
 			type = $2
@@ -91,11 +101,12 @@ nl_format_text() {
 			crit["FORBIDDEN_TYPE_NAME"] = 1; crit["FORBIDDEN_MACRO_NAME"] = 1
 			crit["ASSIGN_IN_CONTROL"] = 1; crit["TOO_MANY_LINES"] = 1
 			crit["TOO_MANY_ARGS"] = 1
+			crit["TERNARY_FBIDDEN"] = 1; crit["TOO_MANY_VARS_FUNC"] = 1
+			crit["TOO_MANY_FUNCS"] = 1
 
 			warn["LINE_TOO_LONG"] = 1
 			warn["WRONG_SCOPE"] = 1; warn["WRONG_SCOPE_VAR"] = 1
-			warn["WRONG_SCOPE_COMMENT"] = 1; warn["MULT_DECL"] = 1
-			warn["DECL_ASSIGN_LINE"] = 1; warn["TOO_MANY_FUNCS"] = 1
+			warn["MULT_DECL"] = 1; warn["DECL_ASSIGN_LINE"] = 1
 			warn["BRACE_NEWLINE"] = 1; warn["INVALID_HEADER"] = 1
 
 			info["SPACE_BEFORE_TAB"] = 1; info["SPACE_REPLACE_TAB"] = 1
@@ -103,6 +114,15 @@ nl_format_text() {
 			info["EMPTY_LINE_FILE"] = 1; info["CONSECUTIVE_NEWLINES"] = 1
 			info["SPACE_EMPTY_LINE"] = 1; info["TRAILING_WHITESPACE"] = 1
 			info["NEWLINE_EOF"] = 1; info["NO_ARGS_VOID"] = 1
+			info["WRONG_SCOPE_COMMENT"] = 1; info["MISSALIGNED_VAR_DECL"] = 1
+			info["TOO_MANY_TAB"] = 1; info["TOO_FEW_TAB"] = 1
+			info["SPC_AFTER_OPERATOR"] = 1; info["SPC_BFR_OPERATOR"] = 1
+			info["SPACE_AFTER_KW"] = 1; info["CONSECUTIVE_SPC"] = 1
+			info["EOL_OPERATOR"] = 1; info["TOO_MANY_WS"] = 1
+			info["MIXED_SPACE_TAB"] = 1; info["SPACE_BEFORE_FUNC"] = 1
+			info["NO_SPC_AFR_PAR"] = 1; info["NL_AFTER_PREPROC"] = 1
+			info["SPACE_AFTER_POINTER"] = 1; info["SPC_BEFORE_NL"] = 1
+			info["TAB_INSTEAD_NL"] = 1
 		}
 		/^FILE /{
 			file=$2

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-NL_VERSION="0.7.1"
+NL_VERSION="0.8.0"
 
 nl_version_init() {
 	export NL_VERSION

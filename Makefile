@@ -47,6 +47,7 @@ install:
 	install -m 0644 lib/*.sh "$(LIBDIR)/"
 	install -d "$(MANDIR)"
 	install -m 0644 share/man/normelog.1 "$(MANDIR)/normelog.1"
+	@./scripts/install-manpath.sh "$(PREFIX)" || true
 	@if [ -n "$(BASHCOMP_DIR)" ]; then \
 	  if [ ! -d "$(BASHCOMP_DIR)" ]; then install -d "$(BASHCOMP_DIR)" >/dev/null 2>&1 || true; fi; \
 	  if [ -d "$(BASHCOMP_DIR)" ] && [ -w "$(BASHCOMP_DIR)" ] && [ -x "$(BASHCOMP_DIR)" ]; then \

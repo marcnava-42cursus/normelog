@@ -28,7 +28,7 @@ nl_flags_help() {
 cat <<'HLP'
 Usage: normelog [OPTIONS] [ERROR_TYPE...]
 
-normelog - Analyzer and filter for norminette with statistics and multiple output formats
+normelog 0.8.0 - Analyzer and filter for norminette with statistics and multiple output formats
 
 GENERAL OPTIONS:
   -h, --help               Show this help message and exit
@@ -271,19 +271,23 @@ nl_flags_parse() {
 					dir="$2"
 					shift
 				fi
-				if [[ ! -d "$dir" ]]; then
-					echo "Error: Directory does not exist: $dir" >&2
-					exit 1
+				if [[ "${NL_PARSE_MODE:-}" != "meta" ]]; then
+					if [[ ! -d "$dir" ]]; then
+						echo "Error: Directory does not exist: $dir" >&2
+						exit 1
+					fi
+					NL_DIRS+=("$dir")
 				fi
-				NL_DIRS+=("$dir")
 				;;
 			--directory=*)
 				local dir="${1#--directory=}"
-				if [[ ! -d "$dir" ]]; then
-					echo "Error: Directory does not exist: $dir" >&2
-					exit 1
+				if [[ "${NL_PARSE_MODE:-}" != "meta" ]]; then
+					if [[ ! -d "$dir" ]]; then
+						echo "Error: Directory does not exist: $dir" >&2
+						exit 1
+					fi
+					NL_DIRS+=("$dir")
 				fi
-				NL_DIRS+=("$dir")
 				;;
 			-n*)
 				local dir
@@ -297,29 +301,37 @@ nl_flags_parse() {
 					dir="$2"
 					shift
 				fi
-				if [[ ! -d "$dir" ]]; then
-					echo "Error: Directory does not exist: $dir" >&2
-					exit 1
+				if [[ "${NL_PARSE_MODE:-}" != "meta" ]]; then
+					if [[ ! -d "$dir" ]]; then
+						echo "Error: Directory does not exist: $dir" >&2
+						exit 1
+					fi
+					NL_EXCLUDE_DIRS+=("$dir")
 				fi
-				NL_EXCLUDE_DIRS+=("$dir")
 				;;
 			--no-directory=*)
 				local dir="${1#--no-directory=}"
-				if [[ ! -d "$dir" ]]; then
-					echo "Error: Directory does not exist: $dir" >&2
-					exit 1
+				if [[ "${NL_PARSE_MODE:-}" != "meta" ]]; then
+					if [[ ! -d "$dir" ]]; then
+						echo "Error: Directory does not exist: $dir" >&2
+						exit 1
+					fi
+					NL_EXCLUDE_DIRS+=("$dir")
 				fi
-				NL_EXCLUDE_DIRS+=("$dir")
 				;;
 			--*)
 				echo "Error: Unknown option '$1'" >&2
 				exit 1
 				;;
 			-*)
-				NL_EXCLUDE_TYPES+=("${1#-}")
+				if [[ "${NL_PARSE_MODE:-}" != "meta" ]]; then
+					NL_EXCLUDE_TYPES+=("${1#-}")
+				fi
 				;;
 			*)
-				NL_INCLUDE_TYPES+=("$1")
+				if [[ "${NL_PARSE_MODE:-}" != "meta" ]]; then
+					NL_INCLUDE_TYPES+=("$1")
+				fi
 				;;
 		esac;
 		shift
